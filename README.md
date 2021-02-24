@@ -1,8 +1,9 @@
-To run
+### To Build and run
 
-npm install in main directory
-cd into client directory
-npm install again
+```npm install``` in main directory
 
-cd back out to the main directory
-npm run dev
+```cd client``` move into client directory
+```npm install``` This installs react and frontend dependencies
+
+```cd ..``` move back out to the main directory
+```npm run dev``` Starts development server
