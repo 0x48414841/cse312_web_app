@@ -1,4 +1,4 @@
-##To run
+To run
 
 npm install in main directory
 cd into client directory
