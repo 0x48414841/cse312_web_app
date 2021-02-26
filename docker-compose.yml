@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo:4.0.4
+    ports:
+     - "27017:27017"
+     
+  web:
+    build: .
+    ports: 
+      - "3000:3000" # USE THIS PORT TO CONNECT TO WEB APP!
+      - "5000:5000"
+    depends_on: 
+    - mongo
+
+
+

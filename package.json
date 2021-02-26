@@ -11,7 +11,8 @@
     "start": "node index.js",
     "server": "nodemon index.js",
     "client": "npm run start --prefix client",
-    "dev": "concurrently \"mongod --dbpath=data\\db\" \"npm run client\" \"npm run server\"",
+    "dev-local": "set MONGO_URI=mongodb://localhost:27017/db && concurrently \"mongod --dbpath=data\\db\" \"npm run client\" \"npm run server\"",
+    "dev-docker": "concurrently \"npm run client\" \"npm run server\"",
     "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
   },
   "author": "",

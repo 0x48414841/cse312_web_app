@@ -9,8 +9,8 @@ const keys = require("./config/keys");
 const app = express();
 
 app.use(bodyParser.json());
-
-//------------------Handle cookies -----------------------------------------------------------
+console.log("The IP address is", process.env.IP, keys.ip, "\nMONGO IP is", process.env.MONGO_URI, keys.mongoURI)
+//------------------Handle cookies; -----------------------------------------------------------
 app.use(
   cookieSession({
     maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -24,7 +24,14 @@ app.use(passport.session()); // Tells passport to use cookies
 
 //----------------- Mongoose config --------------------------------------------------------------------
 const mongoose = require("mongoose");
-mongoose.connect(keys.mongoURI);
+const { mongoURI } = require("./config/prod");
+//mongoose.connect(keys.mongoURI);
+mongoose.connect(keys.mongoURI, function(err) {
+    if (err) {
+      console.log(keys.mongoURI, err)
+      throw err;
+    }
+});
 
 // Will automatically get executed
 require("./models/User"); // Must be imported first, before passport
@@ -53,4 +60,4 @@ if (process.env.NODE_ENV === 'production') {
 
 
 const PORT = process.env.PORT || 5000; // Heroku sets this, in development use 5000
-app.listen(PORT);
+app.listen(PORT, '0.0.0.0'); //IP is either 0.0.0.0 or localhost 
