@@ -12,7 +12,7 @@
     "server": "nodemon index.js",
     "client": "npm run start --prefix client",
     "dev-local": "set MONGO_URI=mongodb://localhost:27017/db && concurrently \"mongod --dbpath=data\\db\" \"npm run client\" \"npm run server\"",
-    "dev-docker": "concurrently \"npm run client\" \"npm run server\"",
+    "dev-docker": "npm run server",
     "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
   },
   "author": "",
@@ -21,16 +21,12 @@
     "body-parser": "^1.19.0",
     "cookie-session": "^1.4.0",
     "express": "^4.17.1",
-    "localtunnel": "^2.0.0",
     "lodash": "^4.17.20",
     "mongod": "^2.0.0", 
     "mongoose": "^5.9.25",
     "passport": "^0.4.1",
     "passport-google-oauth20": "^2.0.0",
-    "path-parser": "^6.1.0",
-    "redux-form": "^8.3.6",
-    "sendgrid": "^5.2.3",
-    "stripe": "^8.78.0"
+    "path-parser": "^6.1.0"
   },
   "devDependencies": {
     "concurrently": "^5.2.0",
