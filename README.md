@@ -18,11 +18,3 @@
 
 ```Connect to http://localhost:3000``` when docker finishes building the containers
 
-
-
-https://docs.docker.com/compose/gettingstarted/
-https://www.youtube.com/watch?v=Qw9zlE3t8Ko
-https://www.thepolyglotdeveloper.com/2019/01/getting-started-mongodb-docker-container-deployment/
-
-docker build -t website .
-container run --publish 7000:3000 --detach website
