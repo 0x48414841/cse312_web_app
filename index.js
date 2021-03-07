@@ -4,9 +4,12 @@ const passport = require("passport");
 const bodyParser = require('body-parser');
 const keys = require("./config/keys");
 
+
 // Express App listens for requests and routes them to different route handlers
 // All our route handlers will be registered with this App
-const app = express();
+const app = require('express')();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 
 app.use(bodyParser.json());
 console.log("The IP address is", process.env.IP, keys.ip, "\nMONGO IP is", process.env.MONGO_URI, keys.mongoURI)
@@ -42,6 +45,7 @@ require("./services/passport");
 // const authRoutes = require("./routes/authRoutes");
 // authRoutes(app);
 require("./routes/authRoutes")(app);
+require("./routes/ex")(app);
 
 // --------- always return index.html --------------------------------
 if (process.env.NODE_ENV === 'production') {
@@ -58,6 +62,21 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
+io.on('connection', function(socket) {
+  console.log('A user connected');
+
+  //Send a message when 
+  setTimeout(function() {
+     //Sending an object when emmiting an event
+     socket.emit('testerEvent', { description: 'A custom event named testerEvent!'});
+  }, 4000);
+
+  socket.on('disconnect', function () {
+     console.log('A user disconnected');
+  });
+});
 
 const PORT = process.env.PORT || 5000; // Heroku sets this, in development use 5000
-app.listen(PORT, '0.0.0.0'); //IP is either 0.0.0.0 or localhost 
+http.listen(PORT, '0.0.0.0'); //IP is either 0.0.0.0 or localhost 
+
+
