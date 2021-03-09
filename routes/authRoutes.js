@@ -30,7 +30,7 @@ module.exports = (app) => {
   app.get("/api/cookie", (req, res) => {
     res.send(req.session);
   });
-
+  
 };
 
 

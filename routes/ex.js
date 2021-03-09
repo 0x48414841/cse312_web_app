@@ -83,11 +83,6 @@ module.exports = (app) => {
           res.send(`You have uploaded this image: <hr/><img src="${req.file.path}" width="500"><hr /><a href="./">Upload another image</a>`);
       });
 
-      app.get("/game", (req, res) => {
-        console.log("here ");
-        res.sendFile("client/homepage.html");
-      });
-
   });
 
 
