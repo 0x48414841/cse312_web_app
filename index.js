@@ -62,18 +62,22 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
+users = new Set()
 io.on('connection', function(socket) {
+
   console.log('A user connected');
+  socket.on('userInfo', function(data) {
+    console.log('user Info: ', data.data);
+    users.add(data.data)
+  });
 
   //Send a message when 
-  setTimeout(function() {
-     //Sending an object when emmiting an event
-     socket.emit('testerEvent', { description: 'A custom event named testerEvent!'});
-  }, 4000);
+
 
   socket.on('disconnect', function () {
      console.log('A user disconnected');
   });
+
 });
 
 const PORT = process.env.PORT || 5000; // Heroku sets this, in development use 5000

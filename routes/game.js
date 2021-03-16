@@ -30,7 +30,7 @@ App = {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
-     console.log();
+     console.log(this.responseText);
      const newDiv = document.createElement("div");
 
      const newContent = document.createTextNode(this.responseText);
@@ -38,9 +38,16 @@ App = {
      newDiv.appendChild(newContent);
    
      const currentDiv = document.getElementById("insert");
+     
      document.body.insertBefore(newDiv, currentDiv);
+    var socket = io.connect('/');
+    socket.emit('userInfo', { data: this.response });
     }
   };
   xhttp.open("GET", "/api/current_user", true);
   xhttp.send();
+}
+
+function b() {
+
 }
