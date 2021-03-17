@@ -28,6 +28,7 @@ app.use(passport.session()); // Tells passport to use cookies
 //----------------- Mongoose config --------------------------------------------------------------------
 const mongoose = require("mongoose");
 const { mongoURI } = require("./config/prod");
+var MongoClient = require('mongodb').MongoClient;
 //mongoose.connect(keys.mongoURI);
 mongoose.connect(keys.mongoURI, function(err) {
     if (err) {
@@ -35,6 +36,7 @@ mongoose.connect(keys.mongoURI, function(err) {
       throw err;
     }
 });
+
 
 // Will automatically get executed
 require("./models/User"); // Must be imported first, before passport
@@ -62,21 +64,55 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-users = new Set()
-io.on('connection', function(socket) {
+clients={};
 
-  console.log('A user connected');
+ 
+io.on('connection',  function(socket) {
+  //clients.push(socket.rooms)
+  console.log('all users', clients );
+  console.log('A user connected',socket.id  );
   socket.on('userInfo', function(data) {
-    console.log('user Info: ', data.data);
-    users.add(data.data)
+    clients[socket.id] = data.googleId
+    MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("db");
+        var myquery = { id: data.googleId };
+        var newvalues = { $set: {loggedIn: true} };
+        dbo.collection("users").updateOne(myquery, newvalues, function(err, res) {
+          if (err) throw err;
+          console.log("user ", data.googleId, 'has logged in');
+          db.close();
+        });
+    });
+
+  socket.on('disconnect', function() {
+    console.log("user ",socket.id, 'has logged out');
+    delete clients[socket.id]
+
+    Object.keys(clients).forEach(function(key) {
+      console.log(key + " " + clients[key]);
+
+      MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
+      if (err) throw err;
+      var dbo = db.db("db");
+      var myquery = { id: clients[key] };
+      var newvalues = { $set: {loggedIn: false} };
+      dbo.collection("users").updateOne(myquery, newvalues, function(err, res) {
+        if (err) throw err;
+        db.close();
+      });
+     console.log('A user disconnected');
+  });
+   });
+});
+
+
+   // console.log('user Info: ', data.data);
+   // users.add(data.data)
   });
 
   //Send a message when 
 
-
-  socket.on('disconnect', function () {
-     console.log('A user disconnected');
-  });
 
 });
 
