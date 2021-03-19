@@ -32,7 +32,7 @@ var MongoClient = require('mongodb').MongoClient;
 //mongoose.connect(keys.mongoURI);
 mongoose.connect(keys.mongoURI, function(err) {
     if (err) {
-      console.log(keys.mongoURI, err)
+      console.log("error, line 35")
       throw err;
     }
 });
@@ -65,13 +65,20 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 clients={};
-
+userIDs = {};
  
 io.on('connection',  function(socket) {
   //clients.push(socket.rooms)
-  console.log('all users', clients );
-  console.log('A user connected',socket.id  );
+  //console.log('all users', clients );
+  console.log('**LOGIN** A user connected',socket.id  );
   socket.on('userInfo', function(data) {
+    googleId =  data.googleId 
+    if (googleId in userIDs === false) {
+      userIDs[googleId] = 1
+    } else {
+      userIDs[googleId] ++
+    }
+    console.log(userIDs)
     clients[socket.id] = data.googleId
     MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
         if (err) throw err;
@@ -80,30 +87,31 @@ io.on('connection',  function(socket) {
         var newvalues = { $set: {loggedIn: true} };
         dbo.collection("users").updateOne(myquery, newvalues, function(err, res) {
           if (err) throw err;
-          console.log("user ", data.googleId, 'has logged in');
           db.close();
         });
     });
 
   socket.on('disconnect', function() {
-    console.log("user ",socket.id, 'has logged out');
-    delete clients[socket.id]
-
-    Object.keys(clients).forEach(function(key) {
-      console.log(key + " " + clients[key]);
+    console.log("**LOGGED OUT ** user ", socket.id, 'has logged out');
+    googleId = clients[socket.id]
+    userIDs[googleId]--;
+    if (userIDs[googleId] <= 0) {
+      delete userIDs[googleId]
 
       MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
-      if (err) throw err;
-      var dbo = db.db("db");
-      var myquery = { id: clients[key] };
-      var newvalues = { $set: {loggedIn: false} };
-      dbo.collection("users").updateOne(myquery, newvalues, function(err, res) {
-        if (err) throw err;
-        db.close();
+          if (err) throw err;
+          var dbo = db.db("db");
+          var myquery = { id: clients[socket.id] };
+          var newvalues = { $set: {loggedIn: false} };
+          dbo.collection("users").updateOne(myquery, newvalues, function(err, res) { // not correct; will fix later
+            if (err) throw err; 
+            db.close();
+          });
+         console.log('A user disconnected');
       });
-     console.log('A user disconnected');
-  });
-   });
+    }
+
+    delete clients[socket.id]
 });
 
 

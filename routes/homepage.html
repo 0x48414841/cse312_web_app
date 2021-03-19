@@ -2,7 +2,7 @@
 <html>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/game.js"></script>
-  <body onload="a()">
+  <body onload="startHeartbeat()"; onbeforeunload="endHeartbeat()">
     <script>
     </script>
     <div id="insert">

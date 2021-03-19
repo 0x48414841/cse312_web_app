@@ -1,46 +1,36 @@
 const passport = require("passport");
 const multer  = require('multer');
 const path = require('path');
-// when user hits this route, passport takes over and handes the access code exchange
+
 module.exports = (app) => {
   app.get("/game", (req, res) => {
-    console.log("here ", path.join(__dirname + '/homepage.html'));
-
     res.sendFile(path.join(__dirname + '/homepage.html'));
-    /*res.setHeader('Access-Control-Allow-Origin', '*')
-    //if (req.isAuthenticated()){res.send("logged in")};
-    res.send(`<html>
-        <body>
-        <form action="/home/file">
-  <input type="file" id="myFile" name="filename">
-  <input type="submit">
-</form>
-          <button type="button" onClick="uploadPic()">Upload Profile Pic </button>
-        </body>
-        <script src="/home/js"></script>
-      </html`); //  res.send(req.session) */
   });
 
   app.get("/game.js", (req, res) => {
-    console.log("here ", path.join(__dirname + '/game.js'));
-
     res.sendFile(path.join(__dirname + '/game.js'));
-    /*res.setHeader('Access-Control-Allow-Origin', '*')
-    //if (req.isAuthenticated()){res.send("logged in")};
-    res.send(`<html>
-        <body>
-        <form action="/home/file">
-  <input type="file" id="myFile" name="filename">
-  <input type="submit">
-</form>
-          <button type="button" onClick="uploadPic()">Upload Profile Pic </button>
-        </body>
-        <script src="/home/js"></script>
-      </html`); //  res.send(req.session) */
   });
 
+  //returns all logged-in users by performing a query to the database
+  app.get("/current_users", (req, res) => {
+      var MongoClient = require('mongodb').MongoClient;
+      users = []
+      MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("db");
+        var query ={loggedIn: true};
+        dbo.collection("users").find(query).toArray(function(err, result) { // not correct; will fix later
+          if (err) throw err; 
+          db.close();
+          console.log("all logged in users", result);
+          res.send(result)
+        });
+    });
+   });
+
+  /*
   app.get("/home/js", (req, res) => {
-    console.log("here ");
+   // console.log("here ");
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('content-type', 'text/js');
     //if (req.isAuthenticated()){res.send("logged in")};
@@ -58,6 +48,7 @@ module.exports = (app) => {
           }
               `); //  res.send(req.session)
   });
+  */
   app.get("/home/file", (req, res) => {
       // 'profile_pic' is the name of our file input field in the HTML form
       let upload = multer({ storage: storage, fileFilter: helpers.imageFilter }).single('profile_pic');
@@ -84,9 +75,6 @@ module.exports = (app) => {
       });
 
   });
-
-
-
 };
 
 
