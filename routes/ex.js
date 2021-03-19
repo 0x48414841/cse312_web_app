@@ -1,14 +1,17 @@
 const passport = require("passport");
-const multer  = require('multer');
+const fileUpload = require('express-fileupload');
+const fs = require('fs');
 const path = require('path');
+const multer  = require('multer')
+const mime = require("mime")
 
 module.exports = (app) => {
-  app.get("/game", (req, res) => {
+  app.get("/home", (req, res) => {
     res.sendFile(path.join(__dirname + '/homepage.html'));
   });
 
-  app.get("/game.js", (req, res) => {
-    res.sendFile(path.join(__dirname + '/game.js'));
+  app.get("/home.js", (req, res) => {
+    res.sendFile(path.join(__dirname + '/home.js'));
   });
 
   //returns all logged-in users by performing a query to the database
@@ -47,34 +50,40 @@ module.exports = (app) => {
             xhttp.send();
           }
               `); //  res.send(req.session)
-  });
+  });.
   */
-  app.get("/home/file", (req, res) => {
-      // 'profile_pic' is the name of our file input field in the HTML form
-      let upload = multer({ storage: storage, fileFilter: helpers.imageFilter }).single('profile_pic');
-  
-      upload(req, res, function(err) {
-          // req.file contains information of uploaded file
-          // req.body contains information of text fields, if there were any
-  
-          if (req.fileValidationError) {
-              return res.send(req.fileValidationError);
-          }
-          else if (!req.file) {
-              return res.send('Please select an image to upload');
-          }
-          else if (err instanceof multer.MulterError) {
-              return res.send(err);
-          }
-          else if (err) {
-              return res.send(err);
-          }
-  
-          // Display uploaded image for user validation
-          res.send(`You have uploaded this image: <hr/><img src="${req.file.path}" width="500"><hr /><a href="./">Upload another image</a>`);
+
+  //https://github.com/expressjs/multer
+  /*var upload = multer({ dest: '../images/', 
+      fileFilter: function (req, file, callback) {
+      var extension = path.extname(file.originalname).toLowerCase();
+      if(extension !== '.png' && extension !== '.jpg' && extension !== '.jpeg') {
+        return callback(new Error('Not a valid image'))
+      }
+      callback(null, true)
+    },
+  })
+  app.post('/upload_picture', upload.single('profile_pic'),  function (req, res) {
+    //fileName = '/image/' + req.files.
+    console.log("made it here", req.user['googleId'])
+    res.redirect('/home')
+  }); 
+  */
+  app.use(fileUpload());
+
+  //https://github.com/richardgirges/express-fileupload/tree/master/example
+  app.post('/upload_picture', function(req, res) {
+    // Uploaded files:
+    console.log("made it here", req.user['googleId'])
+    console.log(mime.getType(req.files.profile_pic.name));
+    ext = mime.getType(req.files.profile_pic.name);
+    if (ext === 'image/png' || ext === 'image/png' || ext === 'image/jpeg') {
+      file = req.files.profile_pic
+      file.mv(path.join(__dirname + '/../images/'+req.user['googleId'] + '.' + mime.getExtension(ext)), function(err) {
+        if (err) { return res.status(500).send(err);}
       });
-
+    }
+    res.redirect('/home')
   });
+
 };
-
-
