@@ -72,18 +72,18 @@ io.on('connection',  function(socket) {
   //console.log('all users', clients );
   console.log('**LOGIN** A user connected',socket.id  );
   socket.on('userInfo', function(data) {
-    googleId =  data.googleId 
+    googleId =  data.data
     if (googleId in userIDs === false) {
       userIDs[googleId] = 1
     } else {
       userIDs[googleId] ++
     }
-    console.log(userIDs)
-    clients[socket.id] = data.googleId
+    console.log("googleId = ", googleId)
+    clients[socket.id] = googleId
     MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
         if (err) throw err;
         var dbo = db.db("db");
-        var myquery = { id: data.googleId };
+        var myquery = { googleId: googleId};
         var newvalues = { $set: {loggedIn: true} };
         dbo.collection("users").updateOne(myquery, newvalues, function(err, res) {
           if (err) throw err;
@@ -92,7 +92,7 @@ io.on('connection',  function(socket) {
     });
 
   socket.on('disconnect', function() {
-    console.log("**LOGGED OUT ** user ", socket.id, 'has logged out');
+    console.log("**LOGGED OUT ** user ", clients[socket.id], 'has logged out');
     googleId = clients[socket.id]
     userIDs[googleId]--;
     if (userIDs[googleId] <= 0) {
@@ -101,9 +101,9 @@ io.on('connection',  function(socket) {
       MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
           if (err) throw err;
           var dbo = db.db("db");
-          var myquery = { id: clients[socket.id] };
+          var myquery = { googleId: googleId };
           var newvalues = { $set: {loggedIn: false} };
-          dbo.collection("users").updateOne(myquery, newvalues, function(err, res) { // not correct; will fix later
+          dbo.collection("users").updateOne(myquery, newvalues, function(err, res) { 
             if (err) throw err; 
             db.close();
           });

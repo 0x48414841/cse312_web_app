@@ -78,12 +78,48 @@ module.exports = (app) => {
     console.log(mime.getType(req.files.profile_pic.name));
     ext = mime.getType(req.files.profile_pic.name);
     if (ext === 'image/png' || ext === 'image/png' || ext === 'image/jpeg') {
-      file = req.files.profile_pic
-      file.mv(path.join(__dirname + '/../images/'+req.user['googleId'] + '.' + mime.getExtension(ext)), function(err) {
+      file = req.files.profile_pic;
+      filePath = path.join(__dirname + '/../images/'+req.user['googleId'] + '.' + mime.getExtension(ext))
+      file.mv(filePath, function(err) {
         if (err) { return res.status(500).send(err);}
+        var MongoClient = require('mongodb').MongoClient;
+        MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
+          if (err) throw err;
+          var dbo = db.db("db");
+          var myquery = { id: req.user['id']}; //might have to replace with googleId
+          console.log('here', req.user['id'], filePath);
+          var newvalues = { $set: {profilePic: filePath } };
+          dbo.collection("users").updateOne(myquery, newvalues, function(err, res) { 
+            if (err) console.log(err) ; 
+            //console.log(res)
+            db.close();
+          });
+       });
       });
     }
     res.redirect('/home')
   });
+
+
+  app.get("/get_profile_pic", (req, res) => {
+    var MongoClient = require('mongodb').MongoClient;
+    id = req.user['googleId']
+    console.log(id)
+    MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
+      if (err) throw err;
+      var dbo = db.db("db");
+      var query = {googleId: id};
+      dbo.collection("users").findOne(query, function(err, result) {
+        if (err) throw err; 
+        db.close();
+        console.log(result)
+
+        filePath = result.profilePic
+
+        res.set({'X-Content-Type-Options' : 'nosniff'});
+        res.sendFile(filePath);
+      });
+  });
+ });
 
 };
