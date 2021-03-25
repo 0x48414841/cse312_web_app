@@ -24,13 +24,14 @@ module.exports = (app) => {
   // --- This inspects the current user ----------
   app.get("/api/current_user", (req, res) => {
     res.send(req.user); //  res.send(req.session)
+    console.log(req.user)
   });
 
   // --- This inspects the current user ----------
   app.get("/api/cookie", (req, res) => {
     res.send(req.session);
   });
-
+  
 };
 
 

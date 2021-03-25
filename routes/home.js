@@ -1,4 +1,5 @@
 var socket;
+var userID;
   function startHeartbeat () {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -10,7 +11,7 @@ var socket;
        const newDiv = document.createElement("div");
 
        const newContent = document.createTextNode(obj.googleId);
-      
+       userID = obj.googleId
        newDiv.appendChild(newContent);
       
        const currentDiv = document.getElementById("insert");
@@ -26,4 +27,9 @@ var socket;
 
 function endHeartbeat() {
    socket.disconnect();
+}
+
+function submitForm() {
+  document.getElementById("userID").value = userID;
+  document.getElementById("picture").submit();
 }

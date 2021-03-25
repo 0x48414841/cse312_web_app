@@ -1,46 +1,39 @@
 const passport = require("passport");
-const multer  = require('multer');
+const fileUpload = require('express-fileupload');
+const fs = require('fs');
 const path = require('path');
-// when user hits this route, passport takes over and handes the access code exchange
+const multer  = require('multer')
+const mime = require("mime")
+
 module.exports = (app) => {
-  app.get("/game", (req, res) => {
-    console.log("here ", path.join(__dirname + '/homepage.html'));
-
+  app.get("/home", (req, res) => {
     res.sendFile(path.join(__dirname + '/homepage.html'));
-    /*res.setHeader('Access-Control-Allow-Origin', '*')
-    //if (req.isAuthenticated()){res.send("logged in")};
-    res.send(`<html>
-        <body>
-        <form action="/home/file">
-  <input type="file" id="myFile" name="filename">
-  <input type="submit">
-</form>
-          <button type="button" onClick="uploadPic()">Upload Profile Pic </button>
-        </body>
-        <script src="/home/js"></script>
-      </html`); //  res.send(req.session) */
   });
 
-  app.get("/game.js", (req, res) => {
-    console.log("here ", path.join(__dirname + '/game.js'));
-
-    res.sendFile(path.join(__dirname + '/game.js'));
-    /*res.setHeader('Access-Control-Allow-Origin', '*')
-    //if (req.isAuthenticated()){res.send("logged in")};
-    res.send(`<html>
-        <body>
-        <form action="/home/file">
-  <input type="file" id="myFile" name="filename">
-  <input type="submit">
-</form>
-          <button type="button" onClick="uploadPic()">Upload Profile Pic </button>
-        </body>
-        <script src="/home/js"></script>
-      </html`); //  res.send(req.session) */
+  app.get("/home.js", (req, res) => {
+    res.sendFile(path.join(__dirname + '/home.js'));
   });
 
+  //returns all logged-in users by performing a query to the database
+  app.get("/current_users", (req, res) => {
+      var MongoClient = require('mongodb').MongoClient;
+      users = []
+      MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("db");
+        var query ={loggedIn: true};
+        dbo.collection("users").find(query).toArray(function(err, result) { // not correct; will fix later
+          if (err) throw err; 
+          db.close();
+          console.log("all logged in users", result);
+          res.send(result)
+        });
+    });
+   });
+
+  /*
   app.get("/home/js", (req, res) => {
-    console.log("here ");
+   // console.log("here ");
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('content-type', 'text/js');
     //if (req.isAuthenticated()){res.send("logged in")};
@@ -57,41 +50,78 @@ module.exports = (app) => {
             xhttp.send();
           }
               `); //  res.send(req.session)
-  });
-  app.get("/home/file", (req, res) => {
-      // 'profile_pic' is the name of our file input field in the HTML form
-      let upload = multer({ storage: storage, fileFilter: helpers.imageFilter }).single('profile_pic');
-  
-      upload(req, res, function(err) {
-          // req.file contains information of uploaded file
-          // req.body contains information of text fields, if there were any
-  
-          if (req.fileValidationError) {
-              return res.send(req.fileValidationError);
-          }
-          else if (!req.file) {
-              return res.send('Please select an image to upload');
-          }
-          else if (err instanceof multer.MulterError) {
-              return res.send(err);
-          }
-          else if (err) {
-              return res.send(err);
-          }
-  
-          // Display uploaded image for user validation
-          res.send(`You have uploaded this image: <hr/><img src="${req.file.path}" width="500"><hr /><a href="./">Upload another image</a>`);
+  });.
+  */
+
+  //https://github.com/expressjs/multer
+  /*var upload = multer({ dest: '../images/', 
+      fileFilter: function (req, file, callback) {
+      var extension = path.extname(file.originalname).toLowerCase();
+      if(extension !== '.png' && extension !== '.jpg' && extension !== '.jpeg') {
+        return callback(new Error('Not a valid image'))
+      }
+      callback(null, true)
+    },
+  })
+  app.post('/upload_picture', upload.single('profile_pic'),  function (req, res) {
+    //fileName = '/image/' + req.files.
+    console.log("made it here", req.user['googleId'])
+    res.redirect('/home')
+  }); 
+  */
+  app.use(fileUpload());
+
+  //https://github.com/richardgirges/express-fileupload/tree/master/example
+  app.post('/upload_picture', function(req, res) {
+    // Uploaded files:
+    console.log("made it here", req.user['googleId'])
+    console.log(mime.getType(req.files.profile_pic.name));
+    ext = mime.getType(req.files.profile_pic.name);
+    console.log(ext, mime.getExtension(ext))
+    if (ext === 'image/png' || ext === 'image/jpg' || ext === 'image/jpeg') {
+      file = req.files.profile_pic;
+      filePath = path.join(__dirname + '/../images/'+req.user['googleId'] + '.' + mime.getExtension(ext))
+      file.mv(filePath, function(err) {
+        if (err) { console.log(err); return res.status(500).send(err);}
+        var MongoClient = require('mongodb').MongoClient;
+        MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
+          if (err) throw err;
+          var dbo = db.db("db");
+          var myquery = { googleId: req.user['googleId']}; //might have to replace with googleId
+          console.log('filePath: ', filePath)
+          console.log('here', req.user['id']);
+          var newvalues = { $set: {profilePic: filePath } };
+          dbo.collection("users").updateOne(myquery, newvalues, function(err, res) { 
+            if (err) console.log(err) ; 
+            //console.log(res)
+            db.close();
+          });
+       });
       });
-
-      app.get("/game", (req, res) => {
-        console.log("here ");
-        res.sendFile("client/homepage.html");
-      });
-
+    }
+    res.redirect('/home')
   });
 
 
+  app.get("/get_profile_pic", (req, res) => {
+    var MongoClient = require('mongodb').MongoClient;
+    id = req.user['googleId']
+    console.log(id)
+    MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
+      if (err) throw err;
+      var dbo = db.db("db");
+      var query = {googleId: id};
+      dbo.collection("users").findOne(query, function(err, result) {
+        if (err) throw err; 
+        db.close();
+        console.log(result)
+
+        filePath = result.profilePic
+
+        res.set({'X-Content-Type-Options' : 'nosniff'});
+        res.sendFile(filePath);
+      });
+  });
+ });
 
 };
-
-

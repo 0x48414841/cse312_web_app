@@ -28,13 +28,15 @@ app.use(passport.session()); // Tells passport to use cookies
 //----------------- Mongoose config --------------------------------------------------------------------
 const mongoose = require("mongoose");
 const { mongoURI } = require("./config/prod");
+var MongoClient = require('mongodb').MongoClient;
 //mongoose.connect(keys.mongoURI);
 mongoose.connect(keys.mongoURI, function(err) {
     if (err) {
-      console.log(keys.mongoURI, err)
+      console.log("error, line 35")
       throw err;
     }
 });
+
 
 // Will automatically get executed
 require("./models/User"); // Must be imported first, before passport
@@ -62,18 +64,64 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-io.on('connection', function(socket) {
-  console.log('A user connected');
+clients={};
+userIDs = {};
+ 
+io.on('connection',  function(socket) {
+  //clients.push(socket.rooms)
+  //console.log('all users', clients );
+  console.log('**LOGIN** A user connected',socket.id  );
+  socket.on('userInfo', function(data) {
+    googleId =  data.data
+    if (googleId in userIDs === false) {
+      userIDs[googleId] = 1
+    } else {
+      userIDs[googleId] ++
+    }
+    console.log("googleId = ", googleId)
+    clients[socket.id] = googleId
+    MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("db");
+        var myquery = { googleId: googleId};
+        var newvalues = { $set: {loggedIn: true} };
+        dbo.collection("users").updateOne(myquery, newvalues, function(err, res) {
+          if (err) throw err;
+          db.close();
+        });
+    });
+
+  socket.on('disconnect', function() {
+    console.log("**LOGGED OUT ** user ", clients[socket.id], 'has logged out');
+    googleId = clients[socket.id]
+    userIDs[googleId]--;
+    if (userIDs[googleId] <= 0) {
+      delete userIDs[googleId]
+
+      MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
+          if (err) throw err;
+          var dbo = db.db("db");
+          var myquery = { googleId: googleId };
+          var newvalues = { $set: {loggedIn: false} };
+          dbo.collection("users").updateOne(myquery, newvalues, function(err, res) { 
+            if (err) throw err; 
+            db.close();
+          });
+         console.log('A user disconnected');
+      });
+    }
+
+    delete clients[socket.id]
+});
+
+
+   // console.log('user Info: ', data.data);
+   // users.add(data.data)
+  });
 
   //Send a message when 
-  setTimeout(function() {
-     //Sending an object when emmiting an event
-     socket.emit('testerEvent', { description: 'A custom event named testerEvent!'});
-  }, 4000);
 
-  socket.on('disconnect', function () {
-     console.log('A user disconnected');
-  });
+
 });
 
 const PORT = process.env.PORT || 5000; // Heroku sets this, in development use 5000
