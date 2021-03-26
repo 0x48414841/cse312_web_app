@@ -31,44 +31,6 @@ module.exports = (app) => {
     });
    });
 
-  /*
-  app.get("/home/js", (req, res) => {
-   // console.log("here ");
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    res.setHeader('content-type', 'text/js');
-    //if (req.isAuthenticated()){res.send("logged in")};
-    res.send(`function uploadPic() {
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-              if (this.readyState == 4 && this.status == 200) {
-                console.log(this.responseText);
-              }
-            };
-            xhttp.open("GET", "/api/current_user", true);
-            xhttp.setRequestHeader('Access-Control-Allow-Origin', '*')
-          
-            xhttp.send();
-          }
-              `); //  res.send(req.session)
-  });.
-  */
-
-  //https://github.com/expressjs/multer
-  /*var upload = multer({ dest: '../images/', 
-      fileFilter: function (req, file, callback) {
-      var extension = path.extname(file.originalname).toLowerCase();
-      if(extension !== '.png' && extension !== '.jpg' && extension !== '.jpeg') {
-        return callback(new Error('Not a valid image'))
-      }
-      callback(null, true)
-    },
-  })
-  app.post('/upload_picture', upload.single('profile_pic'),  function (req, res) {
-    //fileName = '/image/' + req.files.
-    console.log("made it here", req.user['googleId'])
-    res.redirect('/home')
-  }); 
-  */
   app.use(fileUpload());
 
   //https://github.com/richardgirges/express-fileupload/tree/master/example
@@ -125,3 +87,43 @@ module.exports = (app) => {
  });
 
 };
+
+
+ /*
+  app.get("/home/js", (req, res) => {
+   // console.log("here ");
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('content-type', 'text/js');
+    //if (req.isAuthenticated()){res.send("logged in")};
+    res.send(`function uploadPic() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+              if (this.readyState == 4 && this.status == 200) {
+                console.log(this.responseText);
+              }
+            };
+            xhttp.open("GET", "/api/current_user", true);
+            xhttp.setRequestHeader('Access-Control-Allow-Origin', '*')
+          
+            xhttp.send();
+          }
+              `); //  res.send(req.session)
+  });.
+  */
+
+  //https://github.com/expressjs/multer
+  /*var upload = multer({ dest: '../images/', 
+      fileFilter: function (req, file, callback) {
+      var extension = path.extname(file.originalname).toLowerCase();
+      if(extension !== '.png' && extension !== '.jpg' && extension !== '.jpeg') {
+        return callback(new Error('Not a valid image'))
+      }
+      callback(null, true)
+    },
+  })
+  app.post('/upload_picture', upload.single('profile_pic'),  function (req, res) {
+    //fileName = '/image/' + req.files.
+    console.log("made it here", req.user['googleId'])
+    res.redirect('/home')
+  }); 
+  */
