@@ -15,5 +15,19 @@
       <input type="hidden" id="userID" name="userID" > <br>
       <input type="submit" onclick="submitForm()">
     </form>
+    <br>
+    <br>
+    <br>
+
+    <form action="/createLobby" id = "create" method="post">
+      <label>Click to create a game: </label>
+      <button id="createRoomBtn" onclick="createLobby()">Create Lobby!</button>
+    </form>
+    <form action="/joinLobby" id = "join" method="post">
+      <label>Input a Lobby ID to join a game:</label>
+      <input type="text" name="LobbyID">
+      <input type="submit" onclick="joinLobby()">
+    </form>
+    
   </body>
 </html>

@@ -1,5 +1,7 @@
 var socket;
 var userID;
+var lobbies = {};
+ 
   function startHeartbeat () {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -11,7 +13,7 @@ var userID;
        const newDiv = document.createElement("div");
 
        const newContent = document.createTextNode(obj.googleId);
-       userID = obj.googleId
+       userID = obj.googleId;
        newDiv.appendChild(newContent);
       
        const currentDiv = document.getElementById("insert");
@@ -19,6 +21,7 @@ var userID;
        document.body.insertBefore(newDiv, currentDiv);
       socket = io.connect('/');
       socket.emit('userInfo', { data: obj.googleId});
+      
       }
     };
     xhttp.open("GET", "/api/current_user", true);
@@ -32,4 +35,9 @@ function endHeartbeat() {
 function submitForm() {
   document.getElementById("userID").value = userID;
   document.getElementById("picture").submit();
+}
+
+function createLobby() {
+  socket.emit('createGame');
+  console.log("Creating Game Lobby");
 }

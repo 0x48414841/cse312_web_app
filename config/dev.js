@@ -4,7 +4,7 @@ module.exports = {
     googleClientSecret: "hzXeRnwz1RAVSsCldc9f0grr",
     //mongoURI: "mongodb+srv://bailey8:100679Vcs-@email-app-prod.g0e20.mongodb.net/Email-App-Prod?retryWrites=true&w=majority",
     //mongoURI: "mongodb://mongo:27017/db",
-    mongoURI: process.env.MONGO_URI.toString().trim(),
+    mongoURI: "mongodb://localhost:27017/db",
     //ip: process.env.IP.toString().trim(),
     cookieKey: "anything",
  }

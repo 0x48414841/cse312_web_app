@@ -64,7 +64,15 @@ module.exports = (app) => {
     res.redirect('/home')
   });
 
+  app.post('/createLobby', function(req, res){
+    console.log(req);
+    res.redirect('/home')
+  });
 
+  app.post('/joinLobby', function(req , res) {
+    
+
+  });
   app.get("/get_profile_pic", (req, res) => {
     var MongoClient = require('mongodb').MongoClient;
     id = req.user['googleId']
@@ -85,8 +93,11 @@ module.exports = (app) => {
       });
   });
  });
+ 
 
 };
+
+ 
 
 
  /*

@@ -91,6 +91,30 @@ io.on('connection',  function(socket) {
         });
     });
 
+  var lobbies = {};
+  /* Starting Lobby Creation*/
+  const joinLobby = (socket, lobby) => {
+    lobby.sockets.push(socket)
+    socket.join(lobby.id, () => {
+      socket.roomID = lobby.id
+      console.log(socket.id, "successfully joined", lobby.id);
+    });
+    };
+
+  socket.on('joinLobby', (lobbyID) => {
+    const lobby = lobbies[lobbyID];
+    joinLobby(socket, lobby);
+  })
+  socket.on('createGame', function(){
+    console.log("hello I am creating a lobby");
+      const lobby = {
+        lobbyID: Math.random() * 10000000000000000,
+        sockets: []
+      } 
+      lobbies[lobby.lobbyID] = lobby;
+      console.log(lobbies)
+      joinLobby(socket, lobby);
+  });
   socket.on('disconnect', function() {
     console.log("**LOGGED OUT ** user ", clients[socket.id], 'has logged out');
     googleId = clients[socket.id]
@@ -118,11 +142,10 @@ io.on('connection',  function(socket) {
    // console.log('user Info: ', data.data);
    // users.add(data.data)
   });
-
+  
   //Send a message when 
-
-
 });
+
 
 const PORT = process.env.PORT || 5000; // Heroku sets this, in development use 5000
 http.listen(PORT, '0.0.0.0'); //IP is either 0.0.0.0 or localhost 
