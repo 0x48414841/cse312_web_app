@@ -66,11 +66,11 @@ module.exports = (app) => {
 
   app.post('/createLobby', function(req, res){
     console.log(req);
-    res.redirect('/home')
+    res.sendFile(path.join(__dirname + '/game.html'));
   });
 
   app.post('/joinLobby', function(req , res) {
-    
+    res.redirect('/home')
 
   });
   app.get("/get_profile_pic", (req, res) => {
