@@ -1,0 +1,108 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif  !important;
+}
+
+:root {
+  --main-text-color: #f5f5f7;
+  --bg-color: #333333;
+}
+
+.grid-container {
+  padding: 15px;
+  height: 100vh;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: .7fr 0.6fr 2fr 0.6fr .6fr;
+  grid-template-rows: max-content 0.2fr 1.1fr 0.5fr 1.3fr 0.4fr 2.8fr;
+  gap: 0px 0px;
+  grid-template-areas:
+    "Header Header Header Header Header"
+    ". . . . ."
+    "UploadProfilePic . Create-Lobby . ."
+    "UploadProfilePic . . . ."
+    ". . Join-Lobby . ActiveUsers"
+    ". . . . ActiveUsers"
+    ". Chat Chat Chat ActiveUsers";
+}
+
+.Header {
+  grid-area: Header;
+  background-color: var(--bg-color);
+}
+.CreateLobby {
+  grid-area: Create-Lobby;
+  color: var(--bg-color);
+  font-size: 20px;
+  text-align: center;
+  font-weight:bold;
+  background-color: lightgray;
+  padding: 5px;
+}
+.UploadProfilePic {
+  grid-area: UploadProfilePic;
+  color: var(--bg-color);
+  font-size: 20px;
+  text-align: center;
+  font-weight:bold;
+  background-color: lightgray;
+  padding: 5px;
+}
+.JoinLobby {
+  grid-area: Join-Lobby;
+  color: var(--bg-color);
+  font-size: 20px;
+  text-align: center;
+  font-weight:bold;
+  background-color: lightgray;
+  padding: 5px;
+}
+.Chat {
+  grid-area: Chat;
+  color: var(--bg-color);
+  font-size: 20px;
+  text-align: center;
+  font-weight:bold;
+  background-color: lightgray;
+  margin: 10px;
+  padding: 5px;
+
+}
+.ActiveUsers {
+  grid-area: ActiveUsers;
+  color: var(--bg-color);
+  font-size: 20px;
+  text-align: center;
+  font-weight:bold;
+  background-color: lightgray;
+  padding: 5px;
+}
+
+.flex {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+}
+
+.title{
+  color: var(--main-text-color);
+  font-size: 25px;
+  font-weight:400;
+}
+
+a{
+  color: #06c
+
+}
+
+.login-btn{
+
+  font-size:19px;
+  line-height: 1.2;
+  letter-spacing: 0.23px;
+  
+}
