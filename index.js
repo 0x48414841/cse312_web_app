@@ -47,6 +47,7 @@ require("./services/passport");
 // const authRoutes = require("./routes/authRoutes");
 // authRoutes(app);
 require("./routes/authRoutes")(app);
+require("./routes/activeUsers")(app);
 require("./routes/ex")(app);
 
 // --------- always return index.html --------------------------------

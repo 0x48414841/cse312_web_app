@@ -18,7 +18,7 @@ passport.use(
 
     // After the auth code is exchanged for the access token, the access token is sent to this function and this determines what user sees next
     async (accessToken, refreshToken, profile, done) => {
-
+ 
       // The google profile ID is our unique identifier for each user. Its like the password
       const existingUser = await User.findOne({ googleId: profile.id });
 
@@ -26,7 +26,7 @@ passport.use(
         return done(null, existingUser); // This user is passed to serializeUser
       }
 
-      const user = await new User({ googleId: profile.id }).save(); //If the user doensn't exist, create one
+      const user = await new User({ googleId: profile.id, email: profile.emails[0].value}).save(); //If the user doensn't exist, create one
       done(null, user); // This user is passed to serializeUser. 
     }
   )

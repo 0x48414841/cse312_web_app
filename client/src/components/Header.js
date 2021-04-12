@@ -1,34 +1,28 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import { Button } from "antd";
 
-class Header extends Component {
-  renderContent() {
-    console.log(this.props);
-    switch (this.props.auth) {
+const Header = (props) => {
+  const renderContent = () => {
+    switch (props.auth) {
       case null:
         return;
       case false:
-        return <li><a href="/auth/google">Login With Google</a></li>;
+        return <a href="/auth/google">Login With Google</a>;
       default:
-        return [
-          <li key="2"><a href="/api/logout">Logout</a></li>
-        ];
+        return <a href="/api/logout">Logout</a>;
     }
-  }
+  };
 
-  render() {
-    return (
-      <nav>
-        <div className="nav-wrapper">
-          <ul className="right">
-            {this.renderContent()}
-          </ul>
-        </div>
-      </nav>
-    );
-  }
-}
+  return (
+    <div className="Header flex">
+      <div className="title"> The Game</div>
+      <div className="login-btn">
+        {renderContent()}
+      </div>
+    </div>
+  );
+};
 
 function mapStateToProps({ auth }) {
   return { auth };

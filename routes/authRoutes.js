@@ -12,7 +12,7 @@ module.exports = (app) => {
 
   //Tell passport to use google strategy to exchange auth code for access token
   app.get("/auth/google/callback", passport.authenticate("google"), (req, res) => {
-    res.redirect("/"); // Redirect them to dashboard after login
+    res.redirect("/home"); // Redirect them to dashboard after login
   });
 
   // --- Logs user out -------------------------
@@ -24,7 +24,7 @@ module.exports = (app) => {
   // --- This inspects the current user ----------
   app.get("/api/current_user", (req, res) => {
     res.send(req.user); //  res.send(req.session)
-    console.log(req.user)
+    // console.log(req.user)
   });
 
   // --- This inspects the current user ----------
