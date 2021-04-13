@@ -1,8 +1,8 @@
-const express = require("express");
 const cookieSession = require("cookie-session");
 const passport = require("passport");
 const bodyParser = require('body-parser');
 const keys = require("./config/keys");
+
 
 
 // Express App listens for requests and routes them to different route handlers
@@ -10,6 +10,76 @@ const keys = require("./config/keys");
 const app = require('express')();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
+
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+})
+
+ 
+io.on('connection', (client) => {
+
+  client.on('subscribeToTimer', (interval) => {
+    console.log('client is subscribing to timer with interval ', interval);
+    setInterval(() => {
+      client.emit('timer', new Date());
+    }, interval);
+  });
+  
+});
+
+
+io.on('connection', (socket) => { // socket object may be used to send specific messages to the new connected client
+  console.log('new client connected');
+  socket.emit('connection', null);
+  socket.on('channel-join', id => {
+      console.log('channel join', id);
+      STATIC_CHANNELS.forEach(c => {
+          if (c.id === id) {
+              if (c.sockets.indexOf(socket.id) == (-1)) {
+                  c.sockets.push(socket.id);
+                  c.participants++;
+                  io.emit('channel', c);
+              }
+          } else {
+              let index = c.sockets.indexOf(socket.id);
+              if (index != (-1)) {
+                  c.sockets.splice(index, 1);
+                  c.participants--;
+                  io.emit('channel', c);
+              }
+          }
+      });
+
+      return id;
+  });
+  socket.on('send-message', message => {
+      io.emit('message', message);
+  });
+
+  socket.on('disconnect', () => {
+      STATIC_CHANNELS.forEach(c => {
+          let index = c.sockets.indexOf(socket.id);
+          if (index != (-1)) {
+              c.sockets.splice(index, 1);
+              c.participants--;
+              io.emit('channel', c);
+          }
+      });
+  });
+
+});
+
+
+
+/**
+* @description This methos retirves the static channels
+*/
+app.get('/getChannels', (req, res) => {
+  res.json({
+      channels: STATIC_CHANNELS
+  })
+});
 
 app.use(bodyParser.json());
 console.log("The IP address is", process.env.IP, keys.ip, "\nMONGO IP is", process.env.MONGO_URI, keys.mongoURI)
@@ -40,14 +110,13 @@ mongoose.connect(keys.mongoURI, function(err) {
 
 // Will automatically get executed
 require("./models/User"); // Must be imported first, before passport
-require("./services/passport");
+require("./utils/passport");
 
 // -------------------Routes ---------------------------------------------------------------------------
 // --------------Dont do it this way -------------------
 // const authRoutes = require("./routes/authRoutes");
 // authRoutes(app);
 require("./routes/authRoutes")(app);
-require("./routes/activeUsers")(app);
 require("./routes/ex")(app);
 
 // --------- always return index.html --------------------------------
@@ -65,67 +134,9 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-clients={};
-userIDs = {};
- 
-io.on('connection',  function(socket) {
-  //clients.push(socket.rooms)
-  //console.log('all users', clients );
-  console.log('**LOGIN** A user connected',socket.id  );
-  socket.on('userInfo', function(data) {
-    googleId =  data.data
-    if (googleId in userIDs === false) {
-      userIDs[googleId] = 1
-    } else {
-      userIDs[googleId] ++
-    }
-    console.log("googleId = ", googleId)
-    clients[socket.id] = googleId
-    MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
-        if (err) throw err;
-        var dbo = db.db("db");
-        var myquery = { googleId: googleId};
-        var newvalues = { $set: {loggedIn: true} };
-        dbo.collection("users").updateOne(myquery, newvalues, function(err, res) {
-          if (err) throw err;
-          db.close();
-        });
-    });
 
-  socket.on('disconnect', function() {
-    console.log("**LOGGED OUT ** user ", clients[socket.id], 'has logged out');
-    googleId = clients[socket.id]
-    userIDs[googleId]--;
-    if (userIDs[googleId] <= 0) {
-      delete userIDs[googleId]
-
-      MongoClient.connect('mongodb://localhost:27017/db', function(err, db) {
-          if (err) throw err;
-          var dbo = db.db("db");
-          var myquery = { googleId: googleId };
-          var newvalues = { $set: {loggedIn: false} };
-          dbo.collection("users").updateOne(myquery, newvalues, function(err, res) { 
-            if (err) throw err; 
-            db.close();
-          });
-         console.log('A user disconnected');
-      });
-    }
-
-    delete clients[socket.id]
-});
-
-
-   // console.log('user Info: ', data.data);
-   // users.add(data.data)
-  });
-
-  //Send a message when 
-
-
-});
 
 const PORT = process.env.PORT || 5000; // Heroku sets this, in development use 5000
-http.listen(PORT, '0.0.0.0'); //IP is either 0.0.0.0 or localhost 
+app.listen(PORT, '0.0.0.0'); //IP is either 0.0.0.0 or localhost 
 
 

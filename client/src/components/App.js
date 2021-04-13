@@ -1,12 +1,14 @@
 import React, { Component } from "react";
 import { BrowserRouter, Route } from "react-router-dom";
 import { connect } from "react-redux";
+import socketClient  from "socket.io-client";
 import * as actions from "../actions";
 
 import Header from "./Header";
 import Home from "./Home";
 
 class App extends Component {
+
   componentDidMount() {
     this.props.fetchUser();
   }

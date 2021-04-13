@@ -5,12 +5,13 @@ import ChatRoom from './HomePage/ChatRoom'
 import CreateLobby from './HomePage/CreateLobby'
 import JoinLobby from './HomePage/JoinLobby'
 import UploadProfilePic from './HomePage/UploadProfilePic'
+import {Chat} from './Chat/Chat'
 
-
+ 
 class Home extends Component {
   
   state = { activeUsers: [] };
-
+ 
   // componentDidMount() {
   //   this.fetchActiveUsers();
   // }
@@ -18,11 +19,12 @@ class Home extends Component {
   render() {
     return (
         <React.Fragment>
-          <ActiveUsers/>
+          <Chat></Chat>
+          {/* <ActiveUsers/>
           <ChatRoom/>
           <UploadProfilePic/>
           <CreateLobby/>
-          <JoinLobby/>
+          <JoinLobby/> */}
         </React.Fragment>
     );
   }
