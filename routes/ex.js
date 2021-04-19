@@ -6,12 +6,15 @@ const multer  = require('multer')
 const mime = require("mime")
 
 module.exports = (app) => {
-  app.get("/home", (req, res) => {
-    res.sendFile(path.join(__dirname + '/homepage.html'));
+
+
+  app.get("/game", (req, res) => {
+    res.sendFile(path.join(__dirname + '/index.html'));
+
   });
 
-  app.get("/home.js", (req, res) => {
-    res.sendFile(path.join(__dirname + '/home.js'));
+  app.get("/game.js", (req, res) => {
+    res.sendFile(path.join(__dirname + '/game.js'));
   });
 
 

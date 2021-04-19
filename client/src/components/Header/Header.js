@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { Button } from "antd";
+import './Header.css'
 
 const Header = (props) => {
   const renderContent = () => {

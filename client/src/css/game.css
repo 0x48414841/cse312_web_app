@@ -1,0 +1,29 @@
+
+  
+  .game-container {
+    padding: 15px;
+    height: 100vh;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: .7fr 0.6fr 2fr 0.6fr .6fr;
+    grid-template-rows: 0.2fr 1.1fr 0.5fr 1.3fr 0.4fr 2.8fr;
+    gap: 0px 0px;
+    grid-template-areas:
+      ". . . . ."
+      "Game Game Game Game ."
+      "Game Game Game Game ."
+      "Game Game Game Game ActiveUsers"
+      "Game Game Game Game ActiveUsers"
+      ". Chat Chat Chat ActiveUsers";
+  }
+  
+ 
+  .game-chat {
+    grid-area: Chat;
+    color: var(--bg-color);
+    font-size: 20px;
+    text-align: center;
+    font-weight:bold;
+    background-color: lightgray;
+    padding: 5px;
+  }
