@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <body >
+      
+    <div id="insert">
+      
+    </div>
+
+    <form action="/upload_picture" id="picture" method="post" encType="multipart/form-data">
+      <label >Upload profile pic:</label> <br>
+      <input type="file" name="profile_pic">
+      <input type="hidden" id="userID" name="userID" > <br>
+      <input type="submit" onclick="submitForm()">
+    </form>
+    <br>
+    <br>
+    <br>
+
+    <script src="index.js"></script>
+  </body>
+</html>

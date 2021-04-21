@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <body >
+      
+    <div id="insert">
+      
+    </div>
+
+    <form action="/register" id="comment-form" method="post" enctype="multipart/form-data">
+        <text> Register: </text> <br>
+        <label for="text-form-name">Name: </label>
+        <input id="text-login-uname" type="text" name="uname"><br/>
+        <label for="form-comment">Comment: </label>
+        <input id="form-login-password" type="password" name="password">
+        <input type="submit" value="Submit">
+     </form>
+    <br><br>
+
+    <form action="/login" id="comment-form" method="post" enctype="multipart/form-data">
+        <text> Login: </text> <br>
+        <label for="text-form-name">Name: </label>
+        <input id="text-login-uname" type="text" name="uname"><br/>
+        <label for="form-comment">Comment: </label>
+        <input id="form-login-password" type="password" name="password">
+        <input type="submit" value="Submit">
+     </form>
+
+    <form action="/upload_picture" id="picture" method="post" encType="multipart/form-data">
+      <label >Upload profile pic:</label> <br>
+      <input type="file" name="profile_pic">
+      <input type="hidden" id="userID" name="userID" > <br>
+      <input type="submit" onclick="submitForm()">
+    </form>
+    <br>
+    <br>
+    <br>
+
+    
+  </body>
+</html>
