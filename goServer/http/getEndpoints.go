@@ -77,35 +77,3 @@ func WS_ActiveUsers(c net.Conn, req *Request) {
 		}
 	}
 }
-
-/*
-
-switch: {
-	interface = websocket.UpgradeConn
-	handleWebsocket(interface)
-}
-func handleWebsocket(interface) {
-	defer interface.close()
-
-	select {
-		case msg := <-interface
-	}
-}
-func UpgradeConn(c net.Conn, req *Request) {
-	//or make an interface that returns messages via channel
-
-	//parse websocket request
-	key := req.Headers["Sec-WebSocket-Key"]
-	if key == "" {
-		log.Panic("didn't find key")
-	}
-	key += values.WebsocketGUID
-	checksum := sha1.Sum([]byte(key))
-	key = base64.StdEncoding.EncodeToString(checksum[:])
-	util.SendResponse(c, []string{values.Headers["101"], values.Headers["connection"], values.Headers["upgrade"], "Sec-WebSocket-Accept: " + key + "\r\n"}, nil)
-	values.UpgradedConn[c] = true
-	websocket.HandleWebSocket(c)
-}
-
-
-*/
