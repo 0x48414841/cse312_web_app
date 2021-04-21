@@ -23,11 +23,12 @@ module.exports = (app) => {
 
   //https://github.com/richardgirges/express-fileupload/tree/master/example
   app.post('/upload_picture', function(req, res) {
+    console.log(req.body);
     // Uploaded files:
-    console.log("made it here", req.user['googleId'])
-    console.log(mime.getType(req.files.profile_pic.name));
+    // console.log("made it here", req.user['googleId'])
+    // console.log(mime.getType(req.files.profile_pic.name));
     ext = mime.getType(req.files.profile_pic.name);
-    console.log(ext, mime.getExtension(ext))
+    // console.log(ext, mime.getExtension(ext))
     if (ext === 'image/png' || ext === 'image/jpg' || ext === 'image/jpeg') {
       file = req.files.profile_pic;
       filePath = path.join(__dirname + '/../images/'+req.user['googleId'] + '.' + mime.getExtension(ext))
@@ -38,8 +39,8 @@ module.exports = (app) => {
           if (err) throw err;
           var dbo = db.db("db");
           var myquery = { googleId: req.user['googleId']}; //might have to replace with googleId
-          console.log('filePath: ', filePath)
-          console.log('here', req.user['id']);
+          // console.log('filePath: ', filePath)
+          // console.log('here', req.user['id']);
           var newvalues = { $set: {profilePic: filePath } };
           dbo.collection("users").updateOne(myquery, newvalues, function(err, res) { 
             if (err) console.log(err) ; 

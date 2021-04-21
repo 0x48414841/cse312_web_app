@@ -2,7 +2,6 @@ import { connect } from "react-redux";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
- 
 export const JoinLobby = (props) => {
   const [name, setName] = useState("");
   const [room, setRoom] = useState("");
@@ -28,18 +27,25 @@ export const JoinLobby = (props) => {
               onChange={(event) => setRoom(event.target.value)}
             />
           </div>
-          <a
+          <Link
+            onClick={(e) => (!name || !room ? e.preventDefault() : null)}
+            to={`/game?name=${name}&room=${room}`}
+          >
+            <button type="submit">
+              Sign In
+            </button>
+          </Link>
+          {/* <a
             // onClick={(e) => (!name || !room ? e.preventDefault() : null)}
             href="http://localhost:5000/game"
           >
                Enter Lobby
-           </a>
+           </a> */}
         </div>
       </div>
     </div>
   );
 };
-
 
 function mapStateToProps({ auth }) {
   return { auth };
