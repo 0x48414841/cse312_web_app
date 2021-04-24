@@ -6,27 +6,47 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"sync"
 	"time"
 
 	"cse312.app/websocket"
 )
 
 type Game struct {
-	socketList map[int]*net.Conn
-	playerList map[string]*Player
-	bulletList map[string]*Bullet
-	ticker     *time.Ticker
-	r          *rand.Rand
-	id         int
+	socketList      map[int]*net.Conn
+	socketListMutex *sync.Mutex
+	playerList      map[int]*Player
+	playerListMutex *sync.Mutex
+	bulletList      map[string]*Bullet
+	bulletListMutex *sync.Mutex
+	ticker          *time.Ticker
+	r               *rand.Rand
+	userChan        chan *NewUser //send a chan over a chan!
+	userList        map[*NewUser]*Player
+	id              int
+	connectedUsers  int
+}
+
+//needed for cspGame
+type NewUser struct {
+	number      string
+	id          int
+	userInChan  chan *Frame
+	userOutChan chan []byte
 }
 
 func NewGame() *Game {
 	g := &Game{}
 	g.ticker = time.NewTicker(40 * time.Millisecond)
 	g.socketList = make(map[int]*net.Conn)
-	g.playerList = make(map[string]*Player)
+	g.socketListMutex = &sync.Mutex{}
+	g.playerList = make(map[int]*Player)
 	g.bulletList = make(map[string]*Bullet)
+	g.bulletListMutex = &sync.Mutex{}
+	g.playerListMutex = &sync.Mutex{}
 	g.r = rand.New(rand.NewSource(time.Now().UnixNano()))
+	g.userChan = make(chan *NewUser)
+	g.userList = make(map[*NewUser]*Player)
 	return g
 }
 
@@ -41,13 +61,15 @@ func (g *Game) PlayGame(c net.Conn, key string) {
 	//handle new connection
 	player := g.newPlayer(socketId, number)
 	done := make(chan bool)
-	g.socketList[socketId] = &c
+	g.addSocket(socketId, &c)
 
 	go func() { //setInterval
 		for {
 			select {
 			case <-done:
 				return
+				//can use time.After(40 * time.Millisecond), but there would roughly twice as many messages.
+				//using the ticker is okay because a node will braodcast a message to all other nodes!
 			case <-g.ticker.C: //playerlist is empty
 				players := g.updateAllPlayers()
 				bullets := g.updateAllBullets()
@@ -61,10 +83,11 @@ func (g *Game) PlayGame(c net.Conn, key string) {
 					log.Println("error:", err)
 				}
 				//log.Println(string(msgByte), players[0])
+				g.socketListMutex.Lock()
 				for _, s := range g.socketList {
 					ws.Send(s, msgByte)
-
 				}
+				g.socketListMutex.Unlock()
 			}
 		}
 	}()
@@ -72,8 +95,7 @@ func (g *Game) PlayGame(c net.Conn, key string) {
 		frame := <-ws.GetChan()
 		if frame == nil {
 			//assume client disconnected
-			delete(g.socketList, socketId)
-			delete(g.playerList, player.number)
+			g.removeSocket(socketId)
 			done <- true
 			return
 		}
@@ -114,4 +136,22 @@ func (g *Game) PlayGame(c net.Conn, key string) {
 
 		}
 	}
+}
+
+func (g *Game) removeSocket(socketId int) {
+
+	g.socketListMutex.Lock()
+	defer g.socketListMutex.Unlock()
+	log.Println("got or socket lock")
+
+	g.connectedUsers--
+	delete(g.socketList, socketId)
+	delete(g.playerList, socketId)
+}
+
+func (g *Game) addSocket(id int, c *net.Conn) {
+	g.socketListMutex.Lock()
+	defer g.socketListMutex.Unlock()
+	g.connectedUsers++
+	g.socketList[id] = c
 }

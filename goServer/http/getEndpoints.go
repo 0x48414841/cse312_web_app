@@ -13,7 +13,13 @@ import (
 )
 
 func Home(c net.Conn, req *Request) {
-	template, _ := ioutil.ReadFile("home.html")
+	var template []byte
+	log.Println("\n\n\n\n", req.Cookies)
+	if req.Cookies["id"] == "" {
+		template, _ = ioutil.ReadFile("landing.html")
+	} else {
+		template, _ = ioutil.ReadFile("home.html")
+	}
 	util.SendResponse(c, []string{values.Headers["200"], values.Headers["content-html"]}, template)
 	return //temporary
 	result, _ := db.IsValidToken(req.Cookies["id"])

@@ -151,13 +151,72 @@ func GenerateToken() string {
 
 func ParseCookie(cookie string) map[string]string {
 	m := make(map[string]string)
-	if strings.Split(cookie, ":")[0] == "Cookie" {
-		cookieType := strings.Split(strings.Split(cookie, "Cookie: ")[1], "; ")
-		for _, c := range cookieType {
-			pair := strings.Split(c, "=")
-			name, value := pair[0], pair[1]
-			m[name] = value
-		}
+
+	cookieType := strings.Split(cookie, "; ")
+	for _, c := range cookieType {
+		pair := strings.Split(c, "=")
+		name, value := pair[0], pair[1]
+		m[name] = value
 	}
+	log.Println("Cookies", m)
 	return m
+}
+
+//Robust method for handling partial reads for HTTP headers
+//For example, the buffer is 2048 bytes, but the HTTP header is 4096.
+func ReadAll(c net.Conn) ([]byte, error) {
+	streak := 0
+	data := make([]byte, 0)
+	buff := make([]byte, 1)
+	foundChar := false
+	//read until \r\n\r\n is found
+	for streak < 4 {
+		n, err := c.Read(buff)
+		log.Println("READ", buff, "strak=", streak)
+		if n == 0 {
+			return nil, err
+		}
+		data = append(data, buff...)
+		switch streak {
+		case 0:
+			log.Println(buff[0], 13)
+			if buff[0] == 13 {
+				streak++
+				foundChar = true
+			}
+		case 1:
+			if buff[0] == 10 {
+				streak++
+				foundChar = true
+			}
+		case 2:
+			if buff[0] == byte('\r') {
+				streak++
+				foundChar = true
+			}
+		case 3:
+			if buff[0] == byte('\n') {
+				streak++
+				foundChar = true
+			}
+		}
+		if foundChar == false {
+			streak = 0
+		} else {
+			foundChar = false
+		}
+		buff = make([]byte, 1)
+	}
+	log.Println("READ", data)
+	return data, nil
+}
+
+func GetHeaderLoc(data []byte, c net.Conn) int {
+	headerLocation := bytes.Index(data, []byte("\r\n\r\n"))
+	if headerLocation == -1 {
+		restOfHeader, _ := ReadAll(c)
+		data = append(data, restOfHeader...)
+	}
+	headerLocation = bytes.Index(data, []byte("\r\n\r\n"))
+	return headerLocation
 }

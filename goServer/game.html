@@ -22,6 +22,12 @@
     ctx.textBaseline = 'top'
     ctx.font = '30px Arial';
 
+    var pressedW =     false;
+    var pressedA =     false;
+    var pressedS =     false;
+    var pressedD =     false;
+    var pressedClick = false;
+
     socket.onmessage = addMessage;
 
     function addMessage(message) {
@@ -64,25 +70,49 @@
     }
 
     document.onkeydown = function(event){
-        if(event.keyCode === 68)	//d
+        if(event.keyCode === 68 && !pressedD){	//d
+            console.log("d up")
+            pressedD = true
             socket.send(JSON.stringify({'Action': 'keyPress' , InputId:'right',State:true})); 
-        else if(event.keyCode === 83)	//s
+        }
+        else if(event.keyCode === 83 && !pressedS){	//s
+            console.log("s up")
+            pressedS = true
             socket.send(JSON.stringify({'Action': 'keyPress' , InputId:'down',State:true})); 
-        else if(event.keyCode === 65) //a
+        }
+        else if(event.keyCode === 65 && !pressedA){ //a
+            console.log("a up")
+            pressedA = true
             socket.send(JSON.stringify({'Action': 'keyPress' , InputId:'left',State:true})); 
-        else if(event.keyCode === 87) // w
+        }
+        else if(event.keyCode === 87 && !pressedW){ // w
+            console.log("w up")
+            pressedW = true
             socket.send(JSON.stringify({'Action': 'keyPress' , InputId:'up',State:true})); 
+        }
 
     }
     document.onkeyup = function(event){
-        if(event.keyCode === 68)	//d
-            socket.send(JSON.stringify({'Action': 'keyPress' , InputId:'right',State:false})); 
-        else if(event.keyCode === 83)	//s
-            socket.send(JSON.stringify({'Action': 'keyPress' , InputId:'down',State: false})); 
-        else if(event.keyCode === 65) //a
-            socket.send(JSON.stringify({'Action': 'keyPress' , InputId:'left',State: false})); 
-        else if(event.keyCode === 87) // w
-            socket.send(JSON.stringify({'Action': 'keyPress' , InputId:'up',State:   false})); 
+        if(event.keyCode === 68 && pressedD){	//d
+            pressedD = false
+            console.log("caught d")
+            socket.send(JSON.stringify({'Action': 'keyPress' , InputId:'right', State:false})); 
+        }
+        else if(event.keyCode === 83 && pressedS){	//s
+            console.log("caught s")
+            pressedS = false
+            socket.send(JSON.stringify({'Action': 'keyPress' , InputId:'down',  State:false})); 
+        }
+        else if(event.keyCode === 65 && pressedA){ //a
+            console.log("caught a")
+            pressedA = false
+            socket.send(JSON.stringify({'Action': 'keyPress' , InputId:'left',  State:false})); 
+        }
+        else if(event.keyCode === 87 && pressedW){ // w
+            console.log("caught w")
+            pressedW = false
+            socket.send(JSON.stringify({'Action': 'keyPress' , InputId:'up',   State:false})); 
+        }
     }
 
     document.onmousedown = function(event){

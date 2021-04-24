@@ -1,7 +1,6 @@
 package httpServer
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"net"
@@ -25,7 +24,7 @@ type Request struct {
 
 func HandleConnection(c net.Conn) {
 	defer c.Close()
-	data := make([]byte, 2048)
+	data := make([]byte, 2048) //NOTE, buffer must be large enough to read full HTTP headers --> Fixed
 	n, err := c.Read(data)
 	//removes excess bytes - i.e. x00
 	data = data[:n]
@@ -51,11 +50,20 @@ func parseRequest(c net.Conn, data []byte) *Request {
 	req := Request{Headers: make(map[string]string), Cookies: make(map[string]string),
 		PostData: make(map[string][]byte)}
 
-	headerLocation := bytes.Index(data, []byte("\r\n\r\n"))
-	headers := strings.Split(string(data[:headerLocation]), "\r\n")
+	//TODO this might be an error --> data might not be appended to data slice
+	headerEnds := util.GetHeaderLoc(data, c)
+	if headerEnds == -1 {
+		//TODO replace panic with response
+		log.Panic("no body")
+	}
+	headers := strings.Split(string(data[:headerEnds]), "\r\n")
 
 	//assign payload
-	req.Payload = data[headerLocation+len([]byte("\r\n\r\n")):]
+	if headerEnds >= len(data) {
+		req.Payload = nil
+	} else {
+		req.Payload = data[headerEnds+len([]byte("\r\n\r\n")):]
+	}
 
 	//extract GET or POST type
 	req.ReqType = strings.Split(headers[0], " ")[0]
@@ -72,7 +80,7 @@ func parseRequest(c net.Conn, data []byte) *Request {
 		req.Path = req.Path[:index]
 	}
 
-	//TODO error --> no content-type when user resends form data when they refresh page (on Firefox)
+	//TODO error --> no content-type when user resends form data when they refresh page (on Firefox) --> RESOLVED
 	log.Println(string(data))
 	//starts at 1 to skip GET/POST header
 	for i := 1; i < len(headers); i++ {
@@ -82,7 +90,9 @@ func parseRequest(c net.Conn, data []byte) *Request {
 	}
 
 	//get Cookie info
-	req.Cookies = util.ParseCookie(req.Headers["Cookie"])
+	if req.Headers["Cookie"] != "" {
+		req.Cookies = util.ParseCookie(req.Headers["Cookie"])
+	}
 
 	//get POST data
 	if req.ReqType == "POST" {

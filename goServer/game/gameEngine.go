@@ -7,10 +7,11 @@ import (
 )
 
 type Frame struct {
-	Action  string
-	InputId string
-	State   bool
-	Angle   float64
+	Action   string
+	InputId  string
+	State    bool
+	Angle    float64
+	Playerid int // needed for cspGame
 }
 
 type SendPlayer struct {
@@ -39,7 +40,15 @@ type GenericResponse struct {
 	Data   string
 }
 
+var XMin = float64(0)
+var XMax = float64(490)
+var YMin = float64(0)
+var YMax = float64(490)
+
 func (g *Game) updateAllPlayers() []SendPlayer {
+	g.playerListMutex.Lock()
+	defer g.playerListMutex.Unlock()
+
 	pack := make([]SendPlayer, 0)
 	for _, p := range g.playerList {
 		g.updatePlayer(p)
@@ -49,6 +58,9 @@ func (g *Game) updateAllPlayers() []SendPlayer {
 }
 
 func (g *Game) updateAllBullets() []SendBullet {
+	g.playerListMutex.Lock()
+	defer g.playerListMutex.Unlock()
+
 	pack := make([]SendBullet, 0)
 	for _, b := range g.bulletList {
 		g.updateBullet(b)
@@ -62,20 +74,38 @@ func (g *Game) updateAllBullets() []SendBullet {
 }
 
 type Entity struct {
-	x    float64
-	y    float64
-	spdX float64
-	spdY float64
-	id   int
+	x        float64
+	y        float64
+	spdX     float64
+	spdY     float64
+	id       int
+	isPlayer bool
 }
 
-func (g *Game) newEntity(x, y float64) *Entity {
-	return &Entity{x: x, y: y, spdX: 0, spdY: 0, id: g.id}
+func (g *Game) newEntity(x, y float64, isPlayer bool) *Entity {
+	return &Entity{x: x, y: y, spdX: 0, spdY: 0, id: g.id, isPlayer: isPlayer}
 }
 
 func (g *Game) updateEntity(e *Entity) {
 	e.x += e.spdX
 	e.y += e.spdY
+
+	if e.isPlayer == false {
+		return
+	}
+
+	if e.x < XMin {
+		e.x = XMin
+	} else if e.x > XMax {
+		e.x = XMax
+	}
+
+	if e.y < YMin {
+		e.y = YMin
+	} else if e.y > YMax {
+		e.y = YMax
+	}
+
 }
 
 func (g *Game) getDistance(e *Entity, p *Entity) float64 {
@@ -97,7 +127,7 @@ type Player struct {
 }
 
 func (g *Game) newPlayer(id int, number string) *Player {
-	p := &Player{e: g.newEntity(250, 250)}
+	p := &Player{e: g.newEntity(250, 250, true)}
 	p.id = id
 	p.number = number
 	p.pressingRight = false
@@ -109,7 +139,7 @@ func (g *Game) newPlayer(id int, number string) *Player {
 	p.maxSpd = 10
 	p.health = 100
 
-	g.playerList[p.number] = p
+	g.playerList[p.id] = p
 	return p
 }
 
@@ -140,6 +170,12 @@ func (g *Game) updatePlayer(p *Player) {
 		//b.x = p.x -->handled by newBullet
 		//b.y = p.y
 	}
+	p.pressingAttack = false
+	//p.pressingDown = false
+	//p.pressingLeft = false
+	//p.pressingRight = false
+	//p.pressingUp = false
+
 }
 
 type Bullet struct {
@@ -151,7 +187,7 @@ type Bullet struct {
 }
 
 func (g *Game) newBullet(parent int, e *Entity, angle float64) *Bullet {
-	b := &Bullet{e: g.newEntity(e.x, e.y)}
+	b := &Bullet{e: g.newEntity(e.x, e.y, false)}
 	b.id = rand.Intn(1000000)
 	b.e.spdX = math.Cos(float64(angle/180*math.Pi)) * 10
 	b.e.spdY = math.Sin(float64(angle/180*math.Pi)) * 10

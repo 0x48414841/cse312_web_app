@@ -16,6 +16,7 @@ var Headers = map[string]string{
 	"redirect":         "Location: /hello\r\n",
 	"redirect-index":   "Location: /\r\n",
 	"redirect-landing": "Location: /\r\n",
+	"redirect-home":    "Location: /\r\n",
 	"content-css":      "Content-Type: text/css; charset=utf-8\r\n",
 	"content-html":     "Content-Type: text/html; charset=utf-8\r\n",
 	"content-jpeg":     "Content-Type: image/jpeg\r\n",
@@ -43,3 +44,5 @@ var WebsocketGUID string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 var UpgradedConn = map[net.Conn]bool{}
 var UpgradedConnMutex = &sync.Mutex{}
 var TokenChars = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+var Complain = []byte("Something went horribly wrong. In fact, if you're seeing this message, it means that YOUR browswer thought it was a good idea to send a POST request with no body -- i.e. there wasn't a \\r\\n\\r\\n included with the request. Please try making this request again.")
