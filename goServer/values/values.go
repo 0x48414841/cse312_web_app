@@ -17,6 +17,7 @@ var Headers = map[string]string{
 	"redirect-index":   "Location: /\r\n",
 	"redirect-landing": "Location: /\r\n",
 	"redirect-home":    "Location: /\r\n",
+	"redirect-game":    "Location: /game\r\n",
 	"content-css":      "Content-Type: text/css; charset=utf-8\r\n",
 	"content-html":     "Content-Type: text/html; charset=utf-8\r\n",
 	"content-jpeg":     "Content-Type: image/jpeg\r\n",
@@ -31,9 +32,13 @@ var Headers = map[string]string{
 }
 
 var ValidFiles = map[string]bool{
-	"index.js":  true,
-	"index.css": true,
-	"game.js":   true,
+	"index.js":                  true,
+	"index.css":                 true,
+	"game.js":                   true,
+	"index.html":                true,
+	"css/bootstrap.min.css.map": true,
+	"css/bootstrap.min.css":     true,
+	"js/app.js":                 true,
 }
 
 var XsrfChars = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")

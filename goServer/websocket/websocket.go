@@ -27,7 +27,7 @@ type WSFrame struct {
 type WebSocket interface {
 	GetChan() chan *WSFrame
 	Send(*net.Conn, []byte) error
-	Close()
+	Close(string)
 }
 
 //naming things is hard :(
@@ -36,16 +36,17 @@ type Websocket struct {
 	socketChan chan *WSFrame
 }
 
-func UpgradeConn(c net.Conn, key string) WebSocket {
+func UpgradeConn(c net.Conn, key, username string) WebSocket {
 	//parse websocket request and upgrade connection
 	key += values.WebsocketGUID
 	checksum := sha1.Sum([]byte(key))
 	key = base64.StdEncoding.EncodeToString(checksum[:])
 	util.SendResponse(c, []string{values.Headers["101"], values.Headers["connection"], values.Headers["upgrade"], "Sec-WebSocket-Accept: " + key + "\r\n"}, nil)
 
-	values.UpgradedConnMutex.Lock()
-	values.UpgradedConn[c] = true
-	values.UpgradedConnMutex.Unlock()
+	//ActiveUsersMutex.Lock()
+	//values.UpgradedConn[c] = true
+	//ActiveUsersMutex.Unlock()
+	addUser(username)
 
 	ws := &Websocket{c: &c, socketChan: make(chan *WSFrame)}
 	go ws.HandleWebSocket()
@@ -57,10 +58,11 @@ func (ws *Websocket) GetChan() chan *WSFrame {
 	return ws.socketChan
 }
 
-func (ws *Websocket) Close() {
-	values.UpgradedConnMutex.Lock()
-	delete(values.UpgradedConn, *ws.c)
-	values.UpgradedConnMutex.Unlock()
+func (ws *Websocket) Close(username string) {
+	//values.UpgradedConnMutex.Lock()
+	//delete(values.UpgradedConn, *ws.c)
+	//values.UpgradedConnMutex.Unlock()
+	removeUser(username)
 
 	(*ws.c).Close()
 	//I'm not closing channel becuase it might cause a panic

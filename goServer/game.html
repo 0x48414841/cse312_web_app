@@ -29,6 +29,11 @@
     var pressedClick = false;
 
     socket.onmessage = addMessage;
+    socket.onerror = handleErr;
+
+    function handleErr(event) {
+        alert("Lobby either does not exist or is full. Please go the homepage and make a new one")
+    }
 
     function addMessage(message) {
         const chatMessage = JSON.parse(message.data);

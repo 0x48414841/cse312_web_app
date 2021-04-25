@@ -112,6 +112,7 @@ func parseRequest(c net.Conn, data []byte) *Request {
 				currentBytes += n
 			}
 		}
+		log.Println("parsing data")
 		req.PostData = util.ParseMultiForm(req.Payload, boundary)
 	}
 
@@ -134,6 +135,8 @@ func handleGET(c net.Conn, req *Request) {
 		WS_ActiveUsers(c, req)
 	case "/current_users":
 		ActiveUsers(c, req)
+	case "/get_profile_picture_path":
+		GetProfilePath(c, req)
 		//////////////////////////////////////////////////////////////////////////////////////////
 	case "/api/current_user":
 		//send application/json data back with user info
@@ -146,6 +149,17 @@ func handleGET(c net.Conn, req *Request) {
 		req.Path = strings.TrimLeft(req.Path, "/")
 		log.Println(req.Path)
 		if _, err := os.Stat(req.Path); err == nil && values.ValidFiles[req.Path] == true { //handles specific requests for files
+			util.SendFile(c, req.Path)
+			return
+		}
+		//check for profile images
+		log.Println("HERE", req.Path)
+		log.Println("HERE234", req.Path)
+		_, err := os.Stat(req.Path)
+		log.Println(err, os.IsNotExist(err))
+		if /*_, err := os.Stat(req.Path); /*os.IsNotExist(err) &&*/ strings.Contains(req.Path, "images/") { //TODO
+			req.Path = strings.ReplaceAll(req.Path, "..", "nope") //TODO replace ~ too
+			req.Path = strings.ReplaceAll(req.Path, "~", "nope")
 			util.SendFile(c, req.Path)
 			return
 		}
@@ -166,6 +180,10 @@ func handlePOST(c net.Conn, req *Request) {
 		Login(c, req)
 	case "/register":
 		Register(c, req)
+	case "/createLobby":
+		CreateLobby(c, req)
+	case "/uploadProfilePic":
+		UploadProfilePic(c, req)
 	}
 
 }

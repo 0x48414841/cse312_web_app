@@ -50,9 +50,9 @@ func NewGame() *Game {
 	return g
 }
 
-func (g *Game) PlayGame(c net.Conn, key string) {
-	ws := websocket.UpgradeConn(c, key)
-	defer ws.Close()
+func (g *Game) PlayGame(c net.Conn, key, username string) {
+	ws := websocket.UpgradeConn(c, key, username)
+	defer ws.Close(username)
 
 	rand.Seed(time.Now().UnixNano())
 	socketId := rand.Intn(100000000)

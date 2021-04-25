@@ -5,8 +5,11 @@ import (
 	"log"
 	"net"
 
+	db "cse312.app/database"
 	httpServer "cse312.app/http"
 )
+
+var HOST = "localhost"
 
 //https://golang.org/pkg/net/#Listener
 func main() {
@@ -17,9 +20,9 @@ func main() {
 	defer l.Close()
 
 	//init database connection
-	//if err := db.StartDB("localhost"); err != nil {
-	//	panic(err)
-	//}
+	if err := db.StartDB(HOST); err != nil {
+		panic(err)
+	}
 	fmt.Println("Server Started")
 
 	for {

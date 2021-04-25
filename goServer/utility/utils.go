@@ -89,7 +89,8 @@ func SendFile(c net.Conn, file string) {
 		h := []string{values.Headers["404"], values.Headers["content-text"]}
 		SendResponse(c, h, nil)
 	} else {
-		fileExtension := strings.Split(file, ".")[1]
+		lastDot := strings.LastIndex(file, ".")
+		fileExtension := file[lastDot+1:]
 		h := []string{values.Headers["200"], values.Headers["content-"+fileExtension], values.Headers["nosniff"]}
 		SendResponse(c, h, body)
 	}
@@ -135,6 +136,9 @@ func ParseMultiForm(payload []byte, boundary string) map[string][]byte {
 			m[keyStr] = bytes.TrimRight(formBody, "\r\n")
 		}
 	}
+	for i, j := range m {
+		log.Println(i, j)
+	}
 	return m
 }
 
@@ -147,6 +151,11 @@ func GenerateToken() string {
 	}
 
 	return string(xsrfToken)
+}
+
+func GenerateLobbyId() string {
+	id := GenerateToken()
+	return id[:10]
 }
 
 func ParseCookie(cookie string) map[string]string {
