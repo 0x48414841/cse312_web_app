@@ -31,6 +31,21 @@
     socket.onmessage = addMessage;
     socket.onerror = handleErr;
 
+    const activeUsers = new WebSocket('ws://' + window.location.host + '/websocket/active_users');
+    activeUsers.onmessage = addMessage2;
+
+    function addMessage2(message) {
+        const chatMessage = JSON.parse(message.data);
+        switch (chatMessage.Action) {
+            case 'displayUnicast':
+            if (chatMessage.Alert === true ) {
+               display = chatMessage.Sender + ' sent you a message:\n'+ chatMessage.ChatMsg
+               alert(display);
+           }
+           break;
+        }
+    }
+
     function handleErr(event) {
         alert("Lobby either does not exist or is full. Please go the homepage and make a new one")
     }

@@ -34,6 +34,7 @@ type WebSocket interface {
 type Websocket struct {
 	c          *net.Conn
 	socketChan chan *WSFrame
+	username   string //TODO integrate this
 }
 
 func UpgradeConn(c net.Conn, key, username string) WebSocket {
@@ -46,7 +47,7 @@ func UpgradeConn(c net.Conn, key, username string) WebSocket {
 	//ActiveUsersMutex.Lock()
 	//values.UpgradedConn[c] = true
 	//ActiveUsersMutex.Unlock()
-	addUser(username)
+	addUser(username, &c)
 
 	ws := &Websocket{c: &c, socketChan: make(chan *WSFrame)}
 	go ws.HandleWebSocket()
@@ -62,7 +63,7 @@ func (ws *Websocket) Close(username string) {
 	//values.UpgradedConnMutex.Lock()
 	//delete(values.UpgradedConn, *ws.c)
 	//values.UpgradedConnMutex.Unlock()
-	removeUser(username)
+	removeUser(username, ws.c)
 
 	(*ws.c).Close()
 	//I'm not closing channel becuase it might cause a panic

@@ -2,9 +2,12 @@ package httpServer
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net"
+	"strings"
 
 	db "cse312.app/database"
 	"cse312.app/game"
@@ -14,21 +17,26 @@ import (
 )
 
 func Home(c net.Conn, req *Request) {
-	var template []byte
-	log.Println("\n\n\n\n", req.Cookies)
+	//var template []byte
+	/*log.Println("\n\n\n\n", req.Cookies)
 	if req.Cookies["id"] == "" {
 		template, _ = ioutil.ReadFile("login.html")
 	} else {
 		template, _ = ioutil.ReadFile("index.html")
 	}
 	util.SendResponse(c, []string{values.Headers["200"], values.Headers["content-html"]}, template)
-	return //temporary
-	result, _ := db.IsValidToken(req.Cookies["id"])
+	return //temporary*/
+	result, username := db.IsValidToken(req.Cookies["id"])
 	switch result {
 	case true:
-		util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-home"], values.Headers["content-text"]}, nil)
+		template, _ := ioutil.ReadFile("index.html")
+		template = bytes.Replace(template, []byte("{{pic}}"), []byte(db.GetProfilePath(username)), 1)
+		template = bytes.Replace(template, []byte("{{response1}}"), []byte(""), 1)
+		template = bytes.Replace(template, []byte("{{response2}}"), []byte(""), 1)
+		util.SendResponse(c, []string{values.Headers["200"], values.Headers["content-html"]}, template)
 	case false:
-		util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-index"], values.Headers["content-text"]}, nil)
+		template, _ := ioutil.ReadFile("login.html")
+		util.SendResponse(c, []string{values.Headers["200"], values.Headers["content-html"]}, template)
 	}
 }
 
@@ -90,7 +98,16 @@ func ActiveUsers(c net.Conn, req *Request) {
 	//return all users in values.UpgradedConn
 }
 
+type Frame struct { //different from frame used by the game
+	Action   string
+	ChatMsg  string
+	Sender   string
+	Receiver string
+	Alert    bool
+}
+
 func WS_ActiveUsers(c net.Conn, req *Request) {
+
 	//parse websocket request
 	ok, username := db.IsValidToken(req.Cookies["id"])
 	if ok == false {
@@ -108,9 +125,101 @@ func WS_ActiveUsers(c net.Conn, req *Request) {
 		if frame == nil {
 			return
 		}
-		//get users
-		users := websocket.GetActiveUsers()
-		ws.Send(&c, users)
+
+		var parsedFrame Frame
+		err := json.Unmarshal(frame.Payload, &parsedFrame)
+		_ = err
+		log.Println(parsedFrame.Action)
+		switch parsedFrame.Action {
+		case "displayUsers":
+			//get users
+			users := websocket.GetActiveUsers()
+			msg := websocket.ActiveUsersJson{
+				Action: "displayUsers",
+				Users:  users,
+			}
+			msgByte, err := json.Marshal(msg)
+			if err != nil {
+				log.Println("error:", err)
+			}
+			ws.Send(&c, msgByte)
+		case "broadcastMsg":
+			log.Println(parsedFrame.Receiver, parsedFrame.ChatMsg)
+
+			var chat string
+			chat = strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(
+				fmt.Sprintf("%s: %s\t", username, parsedFrame.ChatMsg),
+				"&", "&amp"),
+				"<", "&lt"),
+				">", "&gt")
+			log.Println(chat, username)
+			//add msg to chatHistory
+			values.ChatHistoryMutex.Lock()
+			values.ChatHistory = append(values.ChatHistory, []byte(chat)...)
+			values.ChatHistoryMutex.Unlock()
+
+			msg := Frame{
+				Action:   "displayBroadcast",
+				ChatMsg:  chat,
+				Receiver: "",
+				Alert:    false,
+			}
+			msgByte, err := json.Marshal(msg)
+			if err != nil {
+				log.Println("error:", err)
+			}
+
+			for _, socket := range websocket.GetActiveSockets() {
+				ws.Send(socket, msgByte)
+			}
+		case "unicastMsg":
+			chat := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(
+				fmt.Sprintf("%s", parsedFrame.ChatMsg),
+				"&", "&amp"),
+				"<", "&lt"),
+				">", "&gt")
+			msg := Frame{
+				Action:   "displayUnicast",
+				ChatMsg:  chat,
+				Receiver: parsedFrame.Receiver,
+				Alert:    false,
+				Sender:   username,
+			}
+			log.Println("Receiver = ", parsedFrame.Receiver)
+			msgByte, err := json.Marshal(msg)
+			if err != nil {
+				log.Println("error:", err)
+			}
+			//ws.Send(&c, msgByte)
+			//get ALL sockets associated with sender
+			log.Println("sender = ", username)
+			sockets := websocket.GetUsersSockets(username)
+			for _, socket := range sockets {
+				ws.Send(socket, msgByte)
+			}
+
+			/*
+				msg = Frame{
+					Action:   "displayUnicast",
+					ChatMsg:  chat,
+					Receiver: parsedFrame.Receiver,
+					Alert:    true,
+					Sender:   username,
+				}
+			*/
+			msg.Alert = true
+			log.Println("Receiver = ", parsedFrame.Receiver)
+			msgByte, err = json.Marshal(msg)
+			if err != nil {
+				log.Println("error:", err)
+			}
+			//get ALL sockets associated with receiver
+			log.Println("Receiver = ", parsedFrame.Receiver)
+			sockets = websocket.GetUsersSockets(parsedFrame.Receiver)
+			for _, socket := range sockets {
+				ws.Send(socket, msgByte)
+			}
+		}
 	}
 }
 

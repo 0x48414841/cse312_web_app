@@ -1,8 +1,7 @@
 package websocket
 
 import (
-	"encoding/json"
-	"log"
+	"net"
 	"sync"
 
 	db "cse312.app/database"
@@ -10,9 +9,10 @@ import (
 
 //a user is logged in if they have at least one active ws connec
 var ActiveUsers = make(map[string]int)
+var ActiveSockets = make(map[*net.Conn]string)
 var ActiveUsersMutex = &sync.Mutex{}
 
-type ActuveUsersJson struct {
+type ActiveUsersJson struct {
 	Action string
 	Users  []UserData
 }
@@ -22,17 +22,19 @@ type UserData struct {
 	ProfilePic string
 }
 
-func addUser(user string) {
+func addUser(user string, c *net.Conn) {
 	ActiveUsersMutex.Lock()
 	defer ActiveUsersMutex.Unlock()
 
+	ActiveSockets[c] = user
 	ActiveUsers[user]++
 }
 
-func removeUser(user string) {
+func removeUser(user string, c *net.Conn) {
 	ActiveUsersMutex.Lock()
 	defer ActiveUsersMutex.Unlock()
 
+	delete(ActiveSockets, c)
 	ActiveUsers[user]--
 	if ActiveUsers[user] <= 0 {
 		delete(ActiveUsers, user)
@@ -40,7 +42,7 @@ func removeUser(user string) {
 }
 
 //returns all active users
-func GetActiveUsers() []byte {
+func GetActiveUsers() []UserData {
 	ActiveUsersMutex.Lock()
 	defer ActiveUsersMutex.Unlock()
 
@@ -48,14 +50,29 @@ func GetActiveUsers() []byte {
 	for user := range ActiveUsers {
 		res = append(res, UserData{Username: user, ProfilePic: db.GetProfilePath(user)})
 	}
+	return res
+}
 
-	msg := ActuveUsersJson{
-		Action: "displayUsers",
-		Users:  res,
+func GetActiveSockets() []*net.Conn {
+	ActiveUsersMutex.Lock()
+	defer ActiveUsersMutex.Unlock()
+
+	res := make([]*net.Conn, 0)
+	for user := range ActiveSockets {
+		res = append(res, user)
 	}
-	msgByte, err := json.Marshal(msg)
-	if err != nil {
-		log.Println("error:", err)
+	return res
+}
+
+func GetUsersSockets(username string) []*net.Conn {
+	ActiveUsersMutex.Lock()
+	defer ActiveUsersMutex.Unlock()
+
+	res := make([]*net.Conn, 0)
+	for sock, user := range ActiveSockets {
+		if user == username {
+			res = append(res, sock)
+		}
 	}
-	return msgByte
+	return res
 }
