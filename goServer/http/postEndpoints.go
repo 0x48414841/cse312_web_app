@@ -24,7 +24,7 @@ func Login(c net.Conn, req *Request) {
 			fmt.Sprintf("Set-Cookie: id=%s; HttpOnly\r\n", token)}, nil)
 	case false:
 		util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-index"], values.Headers["content-text"]}, nil)
-		log.Panic(result)
+		//log.Panic(result)
 	}
 }
 

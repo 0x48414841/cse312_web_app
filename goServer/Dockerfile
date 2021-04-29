@@ -1,9 +1,9 @@
 FROM golang:1.13
 
-# Set the home directory to /root
-ENV HOME /root
+# Set the home directory to ~
+ENV HOME ~
 # cd into the home directory
-WORKDIR /root
+WORKDIR ~
 
 COPY . .
 
@@ -19,4 +19,4 @@ ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait
 RUN chmod +x /wait
 
 # Run the app
-CMD /wait && go run ./web_server.go
+CMD /wait && go run server.go
