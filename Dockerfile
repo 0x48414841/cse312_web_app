@@ -1,16 +1,22 @@
-FROM node:13
-# Set the home directory to /root
-ENV HOME /root
-ENV CLI /root/client
-ENV MONGO_URI mongodb://mongo:27017/db
+FROM golang:1.13
+
+# Set the home directory to ~
+ENV HOME ~
 # cd into the home directory
-WORKDIR /root
-# Copy all app files into the image
+WORKDIR ~
+
 COPY . .
-# Download dependancies
-RUN npm install
-# Allow port 3000 to be accessed from outside the container 
-EXPOSE 3000
-EXPOSE 5000
+
+# Allow port 8000 to be accessed
+# from outside the container
+EXPOSE 8000
+
+# Grab MongoDB dependency for golang
+# RUN go get go.mongodb.org/mongo-driver/mongo
+
+# Wait for db
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
+RUN chmod +x /wait
+
 # Run the app
-CMD cd client; npm install; cd /root; npm run dev-docker
+CMD /wait && go run server.go
