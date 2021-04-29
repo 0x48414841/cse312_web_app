@@ -1,14 +1,9 @@
-<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
+<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;padding: 0;margin: auto; display: block;"></canvas>
 
-<div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
-    <div>Hello!</div>
+<div id="player-box" style="width:500px;height:100px;padding: 0;margin: auto; display: block;">
+    <div id="players">
+    </div>
 </div>
-
-
-<form id="chat-form">
-    <input id="chat-input" type="text" style="width:500px"></input>
-</form>
-
 
 <script>
     term = '?lobbyId=';
@@ -19,8 +14,12 @@
     var chatInput = document.getElementById('chat-input');
     var chatForm = document.getElementById('chat-form');
     var ctx = document.getElementById("ctx").getContext("2d");
+    var playersDiv = document.getElementById('players')
+    var players = document.getElementById('players').children
+    var flip = 0;
     ctx.textBaseline = 'top'
     ctx.font = '30px Arial';
+    var declareWinner = false;
 
     var pressedW =     false;
     var pressedA =     false;
@@ -38,10 +37,20 @@
         const chatMessage = JSON.parse(message.data);
         switch (chatMessage.Action) {
             case 'displayUnicast':
+            if (chatMessage.Alert === false ) {
+            return
+           }
             if (chatMessage.Alert === true ) {
                display = chatMessage.Sender + ' sent you a message:\n'+ chatMessage.ChatMsg
                alert(display);
            }
+           user = chatMessage.Sender;
+           msg = window.prompt("Send message to ", user);
+            if (msg === null || msg.trim() === "") {
+                return
+            }
+            activeUsers.send(JSON.stringify({'Action': 'unicastMsg', 'ChatMsg': msg, 'Receiver': user}));
+            break;
            break;
         }
     }
@@ -54,18 +63,46 @@
         const chatMessage = JSON.parse(message.data);
         switch (chatMessage.Action) {
             case 'newPositions':
+                let users = new Map()
                 ctx.clearRect(0,0,500,500);
                 for(var i = 0 ; i < chatMessage.PList.length; i++) {
-                    //console.log(chatMessage.PList[i]);
-                    //console.log(i);
-                   // console.log(chatMessage.PList.length);
-                    //console.log(chatMessage);
+                    users.set(chatMessage.PList[i].Number);
                     num = chatMessage.PList[i].Number;
                     x = chatMessage.PList[i].X;
                     y = chatMessage.PList[i].Y;
                     ctx.fillText(num, x, y);
+                    //update player's health
+                    p = chatMessage.PList[i]
+                    if (players[p.Number] === undefined) {
+                        var innerDiv = document.createElement('div');
+                        innerDiv.innerHTML = `<div style="float: ` + ((flip == 0) ? 'left">' : 'right">') + 
+                                                   p.Number + ` <br>
+                                                    Health:
+                                                    <div id="`+p.Number+`Health"> ` +
+                                                        p.Health + `
+                                                    </div>
+                                                </div>`; 
+                        innerDiv.id = p.Number;
+                        playersDiv.append(innerDiv);
+                        flip = (flip == 0) ? 1 : 0;
+                    }
+                    if (p.Health === 0 && !declareWinner) {
+                        alert(p.Number +' has lost!')
+                        window.location.href = '/';
+                        declareWinner = true;
+                    }
+                    pHealth = document.getElementById(p.Number+'Health');
+                    pHealth.innerHTML = p.Health;
+                } 
+                //cleanup divs in case user left
+                if (players.length > chatMessage.PList.length) {
+                    for ([username, value] of Object.entries(players)) {
+                        if (users.has(username) === false) {
+                            user = document.getElementById(players[username].id);
+                            user.parentNode.removeChild(user);
+                        }
+                    }
                 }
-
                 for(var i = 0 ; i < chatMessage.BList.length; i++) {
                     x = chatMessage.BList[i].X;
                     y = chatMessage.BList[i].Y;
@@ -80,14 +117,14 @@
                 break;
         }
      }
-    chatForm.onsubmit = function(e){
+  /*  chatForm.onsubmit = function(e){
         e.preventDefault();
         if(chatInput.value[0] === '/')  
             socket.send(JSON.stringify({'Action': 'evalServer' , InputId: chatInput.value.slice(1)})); 
         else
             socket.send(JSON.stringify({'Action': 'sendMsgToServer' , InputId: chatInput.value}));
         chatInput.value = '';
-    }
+    } */
 
     document.onkeydown = function(event){
         if(event.keyCode === 68 && !pressedD){	//d

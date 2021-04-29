@@ -56,10 +56,10 @@ func (g *Game) PlayGame(c net.Conn, key, username string) {
 
 	rand.Seed(time.Now().UnixNano())
 	socketId := rand.Intn(100000000)
-	number := strconv.Itoa(rand.Intn(10))
+	//number := strconv.Itoa(rand.Intn(10))
 
 	//handle new connection
-	player := g.newPlayer(socketId, number)
+	player := g.newPlayer(socketId, username)
 	done := make(chan bool)
 	g.addSocket(socketId, &c)
 

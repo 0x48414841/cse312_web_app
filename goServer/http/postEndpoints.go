@@ -49,12 +49,14 @@ func CreateLobby(c net.Conn, req *Request) {
 		template, _ := ioutil.ReadFile("index.html")
 		template = bytes.Replace(template, []byte("{{response1}}"), []byte(fmt.Sprintf("<h1> Success! Your lobby id is %s </h1>", req.PostData["lobbyId"])), 1)
 		template = bytes.Replace(template, []byte("{{response2}}"), []byte(""), 1)
-		util.SendResponse(c, []string{values.Headers["200"], values.Headers["redirect-index"], values.Headers["content-html"]}, template)
+		//util.SendResponse(c, []string{values.Headers["200"], values.Headers["redirect-index"], values.Headers["content-html"]}, template)
+		util.SendResponse(c, []string{values.Headers["200"], values.Headers["content-text"]}, []byte(fmt.Sprintf("<h1> Success! Your lobby id is %s </h1>", lobbyId)))
 	} else {
 		template, _ := ioutil.ReadFile("index.html")
 		template = bytes.Replace(template, []byte("{{response1}}"), []byte("<h1> Error! Lobby id is already in use</h1>"), 1)
 		template = bytes.Replace(template, []byte("{{response2}}"), []byte(""), 1)
-		util.SendResponse(c, []string{values.Headers["200"], values.Headers["redirect-index"], values.Headers["content-html"]}, template)
+		//util.SendResponse(c, []string{values.Headers["200"], values.Headers["redirect-index"], values.Headers["content-html"]}, template)
+		util.SendResponse(c, []string{values.Headers["200"], values.Headers["content-text"]}, []byte("<h1> Error! Lobby id is already in use</h1>"))
 	}
 	//log.Panic(lobbyId, req.PostData)
 }

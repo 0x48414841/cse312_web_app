@@ -4,8 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-  <title>Pick your Favorite</title>
+  <title>CSE 312 Web-App</title>
 
   <!-- Bootstrap -->
   <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -13,20 +12,14 @@
 </head>
 
 <body>
-  <div class="text-center">
-    <div class="container">
-      <a class="text-center" id="dm" href="/dm.html">Direct Message</a>
-
-    </div>
-    <br><br><br>
-  </div>
+    <br><br>
 
   <div class="row text-center">
     <div class="col-sm-3 col-sm-offset-1"> 
+      <h2 >Upload Profile Picture</h2>
         <img src="{{pic}}" class="img-circle rounded float-left" width="100px" height="100px" alt="...">
          <form id="profilePic-form" action="/uploadProfilePic" method="post" enctype="multipart/form-data">
             <div class="form-group">
-              <label for="pic">Choose your profile picture</label>
               <input type="file" class="form-control-file" id="profile-file" name="upload">
             <button type="submit" class="btn btn-primary" >Submit</button>
             </div>
@@ -35,13 +28,13 @@
     <div class="col-sm-4">
         <h2 class="text-center mx-auto">Create Game</h2>
         <hr />
-        <form id="createLobby-form" action="/createLobby" method="post" enctype="multipart/form-data">
+        <form id="createLobby-form" enctype="multipart/form-data">
           <div class="form-group">
-              {{response1}}
+              <div id="status1"> </div> 
             <label for="lobbyId">Enter the lobby Id</label>
             <input type="text" class="form-control" id="lobbyId" name="lobbyId">
           </div>
-          <button type="submit" class="btn btn-primary">Submit</button>
+          <button type="button" onClick="createLobby()" class="btn btn-primary">Submit</button>
         </form>
           <br />
 
@@ -50,7 +43,6 @@
             <hr />
             <form>
             <div class="form-group">
-                {{response2}}
               <label for="lobbyId">Enter the lobby Id</label>
               <input type="text" class="form-control" id="joinLobbyId">
             </div>
@@ -76,7 +68,7 @@
     </div>
     <div class="col-sm-3 col-sm-offset-1"> 
         <div class="column col-xs-4" id="main">
-        Active users
+          <h2 >Active Users</h2>
         <div id ="activeUsers">
         </div>
     </div>

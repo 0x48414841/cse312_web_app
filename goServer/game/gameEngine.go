@@ -18,6 +18,7 @@ type SendPlayer struct {
 	X      float64
 	Y      float64
 	Number string
+	Health int
 }
 
 type SendBullet struct {
@@ -52,7 +53,7 @@ func (g *Game) updateAllPlayers() []SendPlayer {
 	pack := make([]SendPlayer, 0)
 	for _, p := range g.playerList {
 		g.updatePlayer(p)
-		pack = append(pack, SendPlayer{p.e.x, p.e.y, p.number})
+		pack = append(pack, SendPlayer{p.e.x, p.e.y, p.number, p.health})
 	}
 	return pack
 }
@@ -137,7 +138,7 @@ func (g *Game) newPlayer(id int, number string) *Player {
 	p.pressingAttack = false
 	p.mouseAngle = 0
 	p.maxSpd = 10
-	p.health = 100
+	p.health = 25
 
 	g.playerList[p.id] = p
 	return p

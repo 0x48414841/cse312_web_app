@@ -73,11 +73,20 @@ document.addEventListener("keypress", function (event) {
         case 'displayUnicast':
            msg = chatMessage.ChatMsg;
            //chat.innerHTML += '<div style="float: left; background-color: green; opacity: 0.3;"> ' + msg + "</div> <br>";
+           if (chatMessage.Alert === false ) {
+            return
+           }
            if (chatMessage.Alert === true ) {
                display = chatMessage.Sender + ' sent you a message:\n'+ msg
                alert(display);
-           }
-           break;
+           } 
+           user = chatMessage.Sender;
+           msg = window.prompt("Send message to ", user);
+            if (msg === null || msg.trim() === "") {
+                return
+            }
+            activeUsers.send(JSON.stringify({'Action': 'unicastMsg', 'ChatMsg': msg, 'Receiver': user}));
+            break;
      }
      console.log('made it')
  }
@@ -97,10 +106,30 @@ document.addEventListener("keypress", function (event) {
    fetch('/createLobby', {
        method: 'POST',
        body: form
-   }).then(res => {
-       console.log("Request complete! response:", res);
+   }).then(function(response) { //https://developer.mozilla.org/en-US/docs/Web/API/Body/text
+    return response.text().then(function(text) {
+        console.log("text", text);
+        elem = document.getElementById('status1');
+        elem.innerHTML = text;
+    });
    });
 }
+
+function uploadPic() {
+    const form = new FormData(document.getElementById('createLobby-form'));
+    form.get('lobbyId')
+   fetch('/createLobby', {
+       method: 'POST',
+       body: form
+   }).then(function(response) { //https://developer.mozilla.org/en-US/docs/Web/API/Body/text
+    return response.text().then(function(text) {
+        console.log("text", text);
+        elem = document.getElementById('status1');
+        elem.innerHTML = text;
+    });
+   });
+}
+ 
  
  function joinGame() {
      id =  document.getElementById('joinLobbyId').value;
@@ -124,4 +153,4 @@ document.addEventListener("keypress", function (event) {
 
  setInterval(function() {
     activeUsers.send(JSON.stringify({'Action': 'displayUsers'}) );
-  }, 30000 ); 
+  }, 5000 ); 

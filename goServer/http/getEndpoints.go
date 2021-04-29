@@ -190,6 +190,7 @@ func WS_ActiveUsers(c net.Conn, req *Request) {
 			if err != nil {
 				log.Println("error:", err)
 			}
+			log.Println(parsedFrame.Sender, parsedFrame.Receiver, parsedFrame.Alert)
 			//ws.Send(&c, msgByte)
 			//get ALL sockets associated with sender
 			log.Println("sender = ", username)
