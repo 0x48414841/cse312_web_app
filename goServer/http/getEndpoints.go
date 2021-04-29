@@ -41,16 +41,29 @@ func Home(c net.Conn, req *Request) {
 }
 
 func Landing(c net.Conn, req *Request) {
+	//make sure client is logged-in before processing request
+	if result, _ := db.IsValidToken(req.Cookies["id"]); result == false {
+		util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-home"]}, nil)
+		return
+	}
 	template, _ := ioutil.ReadFile("landing.html")
 	util.SendResponse(c, []string{values.Headers["200"], values.Headers["content-html"]}, template)
 }
 
 func Game(c net.Conn, req *Request) {
+	if result, _ := db.IsValidToken(req.Cookies["id"]); result == false {
+		util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-home"]}, nil)
+		return
+	}
 	template, _ := ioutil.ReadFile("game.html")
 	util.SendResponse(c, []string{values.Headers["200"], values.Headers["content-html"]}, template)
 }
 
 func JoinLobby(c net.Conn, req *Request) {
+	if result, _ := db.IsValidToken(req.Cookies["id"]); result == false {
+		util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-home"]}, nil)
+		return
+	}
 	//TODO use ajax later
 	lobby := game.GetLobby(req.QueryStrings["lobbyId"][0])
 	template, _ := ioutil.ReadFile("index.html")

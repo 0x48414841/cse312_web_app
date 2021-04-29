@@ -42,6 +42,11 @@ func Register(c net.Conn, req *Request) {
 //this creates the lobby
 //the client will then have to use join lobby which uses a query string
 func CreateLobby(c net.Conn, req *Request) {
+	if result, _ := db.IsValidToken(req.Cookies["id"]); result == false {
+		util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-home"]}, nil)
+		return
+	}
+
 	lobbyId := string(req.PostData["lobbyId"])
 	lobby := game.GetLobby(lobbyId)
 	if lobby == nil {
@@ -62,6 +67,11 @@ func CreateLobby(c net.Conn, req *Request) {
 }
 
 func UploadProfilePic(c net.Conn, req *Request) {
+	if result, _ := db.IsValidToken(req.Cookies["id"]); result == false {
+		util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-home"]}, nil)
+		return
+	}
+
 	fileName := "images/" + fmt.Sprintf("%x", sha1.Sum(req.PostData["upload"])) + ".jpg" //TODO
 
 	_, username := db.IsValidToken(req.Cookies["id"])

@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	db "cse312.app/database"
 	util "cse312.app/utility"
 	"cse312.app/values"
 )
@@ -152,6 +153,13 @@ func handleGET(c net.Conn, req *Request) {
 			util.SendFile(c, req.Path)
 			return
 		}
+
+		//make sure user is logged-in before requesting user-specific content
+		if result, _ := db.IsValidToken(req.Cookies["id"]); result == false {
+			util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-home"]}, nil)
+			return
+		}
+
 		//check for profile images
 		log.Println("HERE", req.Path)
 		log.Println("HERE234", req.Path)

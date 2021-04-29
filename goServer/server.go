@@ -9,7 +9,7 @@ import (
 	httpServer "cse312.app/http"
 )
 
-var HOST = "localhost"
+var HOST = "mongo"
 
 //https://golang.org/pkg/net/#Listener
 func main() {
