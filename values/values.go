@@ -41,6 +41,7 @@ var ValidFiles = map[string]bool{
 	"css/bootstrap.min.css":     true,
 	"js/app.js":                 true,
 	"login.html":                true,
+	"js/login.js":               true,
 }
 
 var XsrfChars = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")

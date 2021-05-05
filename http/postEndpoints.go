@@ -20,11 +20,12 @@ func Login(c net.Conn, req *Request) {
 	case true:
 		token := util.GenerateToken()
 		db.StoreToken(string(req.PostData["username"]), token)
-		util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-home"], values.Headers["content-text"],
-			fmt.Sprintf("Set-Cookie: id=%s; HttpOnly\r\n", token)}, nil)
+		//util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-home"], values.Headers["content-text"],
+		//fmt.Sprintf("Set-Cookie: id=%s; HttpOnly\r\n", token)}, nil)
+		util.SendResponse(c, []string{values.Headers["200"], values.Headers["content-text"], fmt.Sprintf("Set-Cookie: id=%s; HttpOnly\r\n", token)}, []byte("true"))
 	case false:
-		util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-index"], values.Headers["content-text"]}, nil)
-		//log.Panic(result)
+		//util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-index"], values.Headers["content-text"]}, nil)
+		util.SendResponse(c, []string{values.Headers["200"], values.Headers["content-text"]}, []byte("false"))
 	}
 }
 
@@ -32,10 +33,9 @@ func Register(c net.Conn, req *Request) {
 	result := db.RegisterUser(string(req.PostData["username"]), string(req.PostData["password"]))
 	switch result {
 	case true:
-		util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-index"], values.Headers["content-text"]}, nil)
+		util.SendResponse(c, []string{values.Headers["200"], values.Headers["content-text"]}, []byte("<h1> Registered Successfully </h1>"))
 	case false:
-		//TODO replace with ajax
-		util.SendResponse(c, []string{values.Headers["301"], values.Headers["redirect-index"], values.Headers["content-text"]}, nil)
+		util.SendResponse(c, []string{values.Headers["200"], values.Headers["content-text"]}, []byte("<h1> Registration Failed </h1>"))
 	}
 }
 
